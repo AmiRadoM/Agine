@@ -1,29 +1,54 @@
 from Objects2D import *
-import math
+import Variables
+from Attributes import *
 
 def AABB(object1, object2):
     col1 = object1.BoxCollider
     col2 = object2.BoxCollider
 
-    if(col1.x < col2.x + col2.scale[0] and\
-    col1.x + col1.scale[0] > col2.x and\
-    col1.y < col2.y + col2.scale[1] and\
-    col1.y + col1.scale[1] > col2.y):
+    if(col1.position.x - col1.scale.x/2 < col2.position.x + col2.scale.x/2 and\
+    col1.position.x + col1.scale.x/2 > col2.position.x - col2.scale.x/2 and\
+    col1.position.y - col1.scale.y/2 < col2.position.y + col2.scale.y/2 and\
+    col1.position.y + col1.scale.y/2 > col2.position.y - col2.scale.y/2):
         return True
 
     return False
 
-def DynsamicAABB(object1, object2):
-    pass
+def DynamicAABB(object1, object2):
+    col1 = object1.BoxCollider
+    col2 = object2.BoxCollider
+
+    expandedColPosition = col2.position
+    expandedColScale = col2.scale + col1.scale
+    #line = Line(startPoint=Vector2D(col1.position.x,col1.position.y), endPoint = Vector2D(col1.position.x+object1.Rigidbody2D.velocity.x,col1.position.y+object1.Rigidbody2D.velocity.y), isVisible= True)
+    endPoint = col1.position+object1.Rigidbody2D.velocity * Variables.deltaTime
+    lineCol, hitNearTime, contactNormal  = LineVsSqr(col1.position, endPoint, expandedColPosition,expandedColScale)
+
+    #line.delete()
+    if(lineCol):
+        if(hitNearTime<1):
+            object1.Rigidbody2D.velocity += abs(object1.Rigidbody2D.velocity) * contactNormal
+            return True
+
+    return False
 
 
-def LineVsSqr(line, sqr, circle):
-    lineDirection = [(line.endPoint[0] - line.startPoint[0]), (line.endPoint[1] - line.startPoint[1])]
-    lineDirection = [ 0.001 if i == 0 else i for i in lineDirection]
-    nearX = (sqr.x - sqr.scale[0]/2 - line.startPoint[0]) / lineDirection[0]
-    nearY = (sqr.y - sqr.scale[1]/2 - line.startPoint[1]) / lineDirection[1]
-    farX = (sqr.x + sqr.scale[0]/2 - line.startPoint[0]) / lineDirection[0]
-    farY = (sqr.y + sqr.scale[1]/2 - line.startPoint[1]) / lineDirection[1]
+
+
+
+
+
+def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
+
+    lineDirection = Vector2D((endPoint.x - startPoint.x), (endPoint.y - startPoint.y))
+    if(lineDirection.x == 0):
+        lineDirection.x = 0.0001
+    if (lineDirection.y == 0):
+        lineDirection.y = 0.0001
+    nearX = (sqrPosition.x - sqrScale.x/2 - startPoint.x) / lineDirection.x
+    nearY = (sqrPosition.y - sqrScale.y/2 - startPoint.y) / lineDirection.y
+    farX = (sqrPosition.x + sqrScale.x/2 - startPoint.x) / lineDirection.x
+    farY = (sqrPosition.y + sqrScale.y/2 - startPoint.y) / lineDirection.y
 
     #Sorting
     if(nearX > farX):
@@ -35,35 +60,34 @@ def LineVsSqr(line, sqr, circle):
         nearY = farY
         farY = temp
 
-    if(nearX>farY or nearY > farX): return False
+    if(nearX>farY or nearY > farX): return False, None, None
 
     hitNearTime = max([nearX,nearY])
     hitFarTime = max([farX,farY])
 
-    if(hitFarTime < 0 or hitNearTime > 1): return False
+    if(hitFarTime < 0 or hitNearTime > 1): return False, None, None
 
 
 
-    contactPoint = [line.startPoint[0] + hitNearTime * lineDirection[0],line.startPoint[1] + hitNearTime * lineDirection[1]]
-    circle.x=contactPoint[0]
-    circle.y=contactPoint[1]
-    circle.isVisible = True
+    contactPoint = Vector2D(startPoint.x + hitNearTime * lineDirection.x,startPoint.y + hitNearTime * lineDirection.y)
 
 
     #Normal
+    contactNormal = Vector2D(0,0)
+
     if(nearX>nearY):
-        if(lineDirection[0] < 0):
-            contactNormal = [1, 0]
+        if(lineDirection.x < 0):
+            contactNormal = Vector2D(1,0)
         else:
-            contactNormal = [-1, 0]
+            contactNormal = Vector2D(-1,0)
     elif(nearX<nearY):
-        if (lineDirection[1] < 0):
-            contactNormal = [0, 1]
+        if (lineDirection.y < 0):
+            contactNormal = Vector2D(0,1)
         else:
-            contactNormal = [0, -1]
+            contactNormal = Vector2D(0,-1)
 
 
-    return True
+    return True, hitNearTime, contactNormal
 
 
 
@@ -72,24 +96,24 @@ def LineVsSqr(line, sqr, circle):
 def collision2D():
     from Attributes import BC
     for i in BC:
-        pass
-        i.BoxCollider.x = i.x + i.BoxCollider.localX
-        i.BoxCollider.y = i.y + i.BoxCollider.localY
-        i.BoxCollider.scale[0] = i.scale[0] + i.BoxCollider.localScale[0]
-        i.BoxCollider.scale[1] = i.scale[1] + i.BoxCollider.localScale[1]
+
+        i.BoxCollider.position = i.position + i.BoxCollider.localPosition
+        i.BoxCollider.scale = i.scale + i.BoxCollider.localScale
 
 
-        i.BoxCollider.square.x = i.BoxCollider.x
-        i.BoxCollider.square.y = i.BoxCollider.y
-        i.BoxCollider.square.scale[0] = i.BoxCollider.scale[0]
-        i.BoxCollider.square.scale[1] = i.BoxCollider.scale[1]
+        i.BoxCollider.square.position = i.BoxCollider.position
+        i.BoxCollider.square.scale = i.BoxCollider.scale
         i.BoxCollider.square.isVisible = i.BoxCollider.isVisible
 
 
 
         for j in BC:
             if i != j:
+
                 if(AABB(i, j)):
+                    if (hasattr(i, "Rigidbody2D")):
+                        DynamicAABB(i, j)
+
                     i.BoxCollider.square.color = (255, 0, 0)
                     j.BoxCollider.square.color = (255, 0, 0)
                 else:
