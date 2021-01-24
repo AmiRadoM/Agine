@@ -114,7 +114,7 @@ def collision2D():
         for j in BC:
             if i != j:
 
-                if (hasattr(i, "Rigidbody2D")):
+                if (hasattr(i, "Rigidbody2D") and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
                     collisions = []
                     collided, contactNormal, contactTime = DynamicAABB(i, j)
                     if (collided):
@@ -123,11 +123,12 @@ def collision2D():
                     for c in collisions:
                         i.Rigidbody2D.velocity += abs(i.Rigidbody2D.velocity) * c[1]
 
-                if(AABB(i, j)):
-
-
-                    i.BoxCollider.square.color = (255, 0, 0)
-                    j.BoxCollider.square.color = (255, 0, 0)
                 else:
-                    i.BoxCollider.square.color = (0, 255, 0)
-                    j.BoxCollider.square.color = (0, 255, 0)
+                    if(AABB(i, j)):
+
+
+                        i.BoxCollider.square.color = (255, 0, 0)
+                        j.BoxCollider.square.color = (255, 0, 0)
+                    else:
+                        i.BoxCollider.square.color = (0, 255, 0)
+                        j.BoxCollider.square.color = (0, 255, 0)

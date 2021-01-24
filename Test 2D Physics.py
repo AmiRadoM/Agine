@@ -36,6 +36,7 @@ def start():
     s4.BoxCollider.isVisible = True
     s5.BoxCollider.isVisible = True
 
+    s5.BoxCollider.isTrigger = True
 
     s1.addAttr("Rigidbody2D")
 
