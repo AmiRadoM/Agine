@@ -20,17 +20,19 @@ def DynamicAABB(object1, object2):
 
     expandedColPosition = col2.position
     expandedColScale = col2.scale + col1.scale
+    from Agine_main import Draw
     #line = Line(startPoint=Vector2D(col1.position.x,col1.position.y), endPoint = Vector2D(col1.position.x+object1.Rigidbody2D.velocity.x,col1.position.y+object1.Rigidbody2D.velocity.y), isVisible= True)
-    endPoint = col1.position+object1.Rigidbody2D.velocity * Variables.deltaTime
-    lineCol, hitNearTime, contactNormal  = LineVsSqr(col1.position, endPoint, expandedColPosition,expandedColScale)
+    endPoint = col1.position+object1.Rigidbody2D.velocity * Variables.deltaTime + 0.0001
+    lineCol, hitNearTime, contactNormal, contactPoint  = LineVsSqr(col1.position, endPoint, expandedColPosition,expandedColScale)
 
+    
     #line.delete()
     if(lineCol):
         if(hitNearTime<1):
-            object1.Rigidbody2D.velocity += abs(object1.Rigidbody2D.velocity) * contactNormal
-            return True
+            return True, contactNormal,hitNearTime
 
-    return False
+
+    return False, None, None
 
 
 
@@ -42,52 +44,50 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
     lineDirection = Vector2D((endPoint.x - startPoint.x), (endPoint.y - startPoint.y))
     if(lineDirection.x == 0):
-        lineDirection.x = 0.0001
+        return False, None, None, None
     if (lineDirection.y == 0):
-        lineDirection.y = 0.0001
-    nearX = (sqrPosition.x - sqrScale.x/2 - startPoint.x) / lineDirection.x
-    nearY = (sqrPosition.y - sqrScale.y/2 - startPoint.y) / lineDirection.y
-    farX = (sqrPosition.x + sqrScale.x/2 - startPoint.x) / lineDirection.x
-    farY = (sqrPosition.y + sqrScale.y/2 - startPoint.y) / lineDirection.y
+        return False, None, None, None
+    nearTime = (sqrPosition + Vector2D(-sqrScale.x/2,sqrScale.y/2) - startPoint) / lineDirection
+
+    farTime = (Vector2D(sqrScale.x/2, - sqrScale.y/2) + sqrPosition  - startPoint) / lineDirection
 
     #Sorting
-    if(nearX > farX):
-        temp = nearX
-        nearX = farX
-        farX = temp
-    if (nearY > farY):
-        temp = nearY
-        nearY = farY
-        farY = temp
+    if(nearTime.x > farTime.x):
+        temp = nearTime.x
+        nearTime.x = farTime.x
+        farTime.x = temp
+    if (nearTime.y > farTime.y):
+        temp = nearTime.y
+        nearTime.y = farTime.y
+        farTime.y = temp
 
-    if(nearX>farY or nearY > farX): return False, None, None
+    if(nearTime.x>farTime.y or nearTime.y > farTime.x): return False, None, None, None
 
-    hitNearTime = max([nearX,nearY])
-    hitFarTime = max([farX,farY])
+    hitNearTime = max([nearTime.x,nearTime.y])
+    hitFarTime = max([farTime.x,farTime.y])
 
-    if(hitFarTime < 0 or hitNearTime > 1): return False, None, None
+    if(hitFarTime < 0 or hitNearTime > 1): return False, None, None, None
 
 
 
     contactPoint = Vector2D(startPoint.x + hitNearTime * lineDirection.x,startPoint.y + hitNearTime * lineDirection.y)
 
-
     #Normal
     contactNormal = Vector2D(0,0)
 
-    if(nearX>nearY):
+    if(nearTime.x>nearTime.y):
         if(lineDirection.x < 0):
             contactNormal = Vector2D(1,0)
         else:
             contactNormal = Vector2D(-1,0)
-    elif(nearX<nearY):
+    elif(nearTime.x<nearTime.y):
         if (lineDirection.y < 0):
             contactNormal = Vector2D(0,1)
         else:
             contactNormal = Vector2D(0,-1)
 
 
-    return True, hitNearTime, contactNormal
+    return True, -hitNearTime, contactNormal, contactPoint
 
 
 
@@ -98,7 +98,11 @@ def collision2D():
     for i in BC:
 
         i.BoxCollider.position = i.position + i.BoxCollider.localPosition
-        i.BoxCollider.scale = i.scale + i.BoxCollider.localScale
+        if(type(i) != Circle):
+            i.BoxCollider.scale = i.scale + i.BoxCollider.localScale
+        if(type(i) == Circle):
+            i.BoxCollider.scale =  i.BoxCollider.localScale + i.radius * 2
+
 
 
         i.BoxCollider.square.position = i.BoxCollider.position
@@ -110,9 +114,17 @@ def collision2D():
         for j in BC:
             if i != j:
 
+                if (hasattr(i, "Rigidbody2D")):
+                    collisions = []
+                    collided, contactNormal, contactTime = DynamicAABB(i, j)
+                    if (collided):
+                        collisions.append([j, contactNormal, contactTime])
+                    collisions.sort(key=lambda x: x[2])
+                    for c in collisions:
+                        i.Rigidbody2D.velocity += abs(i.Rigidbody2D.velocity) * c[1]
+
                 if(AABB(i, j)):
-                    if (hasattr(i, "Rigidbody2D")):
-                        DynamicAABB(i, j)
+
 
                     i.BoxCollider.square.color = (255, 0, 0)
                     j.BoxCollider.square.color = (255, 0, 0)

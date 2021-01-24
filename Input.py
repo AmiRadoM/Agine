@@ -76,4 +76,14 @@ def input():
     KeyPressed["lalt"] = keyPressed[pygame.K_LALT]
 
     KeyPressed["space"] = keyPressed[pygame.K_SPACE]
+    if KeyPressed["space"]:
+        KeyDown["space"] = False
+
+    #DOWN
+    event = pygame.event.get(pygame.KEYDOWN)
+    for e in event:
+        KeyDown["space"] = e.key == pygame.K_SPACE
+
+    #UP
+
 

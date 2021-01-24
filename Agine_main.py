@@ -49,12 +49,32 @@ def translatePoints(sprite):
 
     return translatedPoints
 
-        
+
+class Draw():
+    @staticmethod
+    def Square(position, scale, color, width):
+        x = x = position.x - scale.x / 2 + gameDisplay.display.get_width() / 2 - cameraPos[0]
+        y = -(position.y + scale.y / 2 - gameDisplay.display.get_height() / 2 - cameraPos[1])
+        pygame.draw.rect(gameDisplay.display, color, (x, y, scale.x, scale.y), width)
+
+    @staticmethod
+    def Line(startPoint, endPoint, color, width):
+        startX = startPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+        startY = -(startPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
+        endX = endPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+        endY = -(endPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
+        pygame.draw.line(gameDisplay.display, color, [startX, startY], [endX, endY], width)
+
+    @staticmethod
+    def Circle(position, radius, color, width):
+        cX = position.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+        cY = -(position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
+        pygame.draw.circle(gameDisplay.display, color, (cX, cY), radius, width)
+
 def renderer2D():
     # mousePos = pygame.mouse.get_pos()
 
     # Render Background
-    gameDisplay.display.fill(gameDisplay.bgColor)
 
 
     # Bubble Sort Sprite Layers
@@ -308,7 +328,7 @@ def renderer3D():
 
 
 def checkClose():
-    for event in pygame.event.get():
+    for event in pygame.event.get(pygame.QUIT):
         if event.type == pygame.QUIT:
             crashed["crashed"] = True
 
@@ -320,6 +340,7 @@ def Main():
     while not crashed.get("crashed"):
         Variables.deltaTime = 1/clock.get_fps()
         checkClose()
+        gameDisplay.display.fill(gameDisplay.bgColor)
         physics2D()
         input()
         renderer2D()

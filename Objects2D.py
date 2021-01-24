@@ -12,7 +12,8 @@ class Vector2D():
         self.x = x
         self.y = y
 
-    def Zero(self):
+    @staticmethod
+    def Zero():
         return Vector2D(0,0)
 
     def __str__(self):
