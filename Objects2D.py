@@ -63,14 +63,23 @@ class object2D():
         """
         :param attr: The name of the attribute
         """
-        if attr == "Rigidbody2D":
-            self.Rigidbody2D = Attributes.Rigidbody2D()
-            Attributes.RB2D.append(self)
-        elif(attr == "BoxCollider"):
-            self.BoxCollider = Attributes.BoxCollider()
-            Attributes.BC.append(self)
-        else:
+        # if attr == "Rigidbody2D":
+        #     self.Rigidbody2D = Attributes.Rigidbody2D()
+        #     Attributes.RB2D.append(self)
+        # elif(attr == "BoxCollider"):
+        #     self.BoxCollider = Attributes.BoxCollider()
+        #     Attributes.BC.append(self)
+        # else:
+        #     raise ValueError("Missing an Agine2D Attribute Name!")
+
+        # setattr(self, "attr", eval(""+attr + "()"))
+        try:
+            exec(f"self.{attr} = Attributes.{attr}()")
+            eval("Attributes." + attr.lower()).append(self)
+        except:
             raise ValueError("Missing an Agine2D Attribute Name!")
+
+
 
 
 

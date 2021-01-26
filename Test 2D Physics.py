@@ -2,19 +2,18 @@ from Agine_main import *
 import threading
 
 def update():
-    while not crashed.get("crashed"):
-        speed = 500
-        if(KeyPressed["d"]):
-            s1.Rigidbody2D.velocity = Vector2D(speed , s1.Rigidbody2D.velocity.y)
-        if (KeyPressed["a"]):
-            s1.Rigidbody2D.velocity = Vector2D(-speed , s1.Rigidbody2D.velocity.y)
-        if(not KeyPressed["d"] and not KeyPressed["a"]):
-            s1.Rigidbody2D.velocity = Vector2D(0 , s1.Rigidbody2D.velocity.y)
+    # speed = 500
+    # if(KeyPressed["d"]):
+    #     s1.Rigidbody2D.velocity = Vector2D(speed , s1.Rigidbody2D.velocity.y)
+    # if (KeyPressed["a"]):
+    #     s1.Rigidbody2D.velocity = Vector2D(-speed , s1.Rigidbody2D.velocity.y)
+    # if(not KeyPressed["d"] and not KeyPressed["a"]):
+    #     s1.Rigidbody2D.velocity = Vector2D(0 , s1.Rigidbody2D.velocity.y)
+    #
+    # if(KeyDown["space"]):
+    #     s1.Rigidbody2D.velocity = Vector2D(s1.Rigidbody2D.velocity.x, 2000)
 
-        if(KeyDown["space"]):
-            s1.Rigidbody2D.velocity = Vector2D(0, 500)
-
-        pass
+    pass
 
 
 
@@ -23,42 +22,46 @@ def update():
 
 def start():
 
+
+    ground.addAttr("BoxCollider")
+
     s1.addAttr("BoxCollider")
     s2.addAttr("BoxCollider")
     s3.addAttr("BoxCollider")
     s4.addAttr("BoxCollider")
-    s5.addAttr("BoxCollider")
 
 
-    s1.BoxCollider.isVisible = True
-    s2.BoxCollider.isVisible = True
-    s3.BoxCollider.isVisible = True
-    s4.BoxCollider.isVisible = True
-    s5.BoxCollider.isVisible = True
 
-    s5.BoxCollider.isTrigger = True
+
+
+
 
     s1.addAttr("Rigidbody2D")
+    s2.addAttr("Rigidbody2D")
+    s3.addAttr("Rigidbody2D")
+    s4.addAttr("Rigidbody2D")
 
 
+
+    s1.Rigidbody2D.addForce(Vector2D(300,0), "impulse")
+
+
+    #s3.Rigidbody2D.gravity = Vector2D(0,-1)
 
     pass
 
 #Variables
 
+ground = Square(position= Vector2D(-100,-200), scale = Vector2D(500,100))
 
-s1 = Circle(position=Vector2D(-50,0), radius= 25)
-#
-s2 = Square(position= Vector2D(-100,-200), scale = Vector2D(100,100))
-s3 = Square(position= Vector2D(0,-200), scale = Vector2D(100,100))
-s4 = Square(position= Vector2D(100,-200), scale = Vector2D(100,100))
-s5 = Square(position= Vector2D(200,-200), scale = Vector2D(100,100))
 
-# l1 = Line(startPoint= Vector2D(-500,500))
+s1 = Square(name= "controlled",position=Vector2D(-302,-100), scale= Vector2D(50,50))
+s2 = Square(name= "controlled",position=Vector2D(-51,-100), scale= Vector2D(50,50))
+s3 = Square(name= "controlled",position=Vector2D(-0,-100), scale= Vector2D(50,50))
+s4 = Square(name= "notControlled",position= Vector2D(51,-100), scale = Vector2D(50,50))
 
 start()
 
 #threading
-updateThread = threading.Thread(target=update,args=())
-updateThread.start()
+updateFunctions.append(update)
 Main()

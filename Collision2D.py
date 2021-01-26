@@ -2,6 +2,7 @@ from Objects2D import *
 import Variables
 from Attributes import *
 
+
 def AABB(object1, object2):
     col1 = object1.BoxCollider
     col2 = object2.BoxCollider
@@ -20,15 +21,13 @@ def DynamicAABB(object1, object2):
 
     expandedColPosition = col2.position
     expandedColScale = col2.scale + col1.scale
-    from Agine_main import Draw
-    #line = Line(startPoint=Vector2D(col1.position.x,col1.position.y), endPoint = Vector2D(col1.position.x+object1.Rigidbody2D.velocity.x,col1.position.y+object1.Rigidbody2D.velocity.y), isVisible= True)
-    endPoint = col1.position+object1.Rigidbody2D.velocity * Variables.deltaTime + 0.0001
+    endPoint = col1.position+object1.Rigidbody2D.velocity * Variables.deltaTime + 0.000000001
     lineCol, hitNearTime, contactNormal, contactPoint  = LineVsSqr(col1.position, endPoint, expandedColPosition,expandedColScale)
 
     
     #line.delete()
     if(lineCol):
-        if(hitNearTime<1):
+        if(-hitNearTime<1):
             return True, contactNormal,hitNearTime
 
 
@@ -47,8 +46,8 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
         return False, None, None, None
     if (lineDirection.y == 0):
         return False, None, None, None
-    nearTime = (sqrPosition + Vector2D(-sqrScale.x/2,sqrScale.y/2) - startPoint) / lineDirection
 
+    nearTime = (sqrPosition + Vector2D(-sqrScale.x/2,sqrScale.y/2) - startPoint) / lineDirection
     farTime = (Vector2D(sqrScale.x/2, - sqrScale.y/2) + sqrPosition  - startPoint) / lineDirection
 
     #Sorting
@@ -87,15 +86,15 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
             contactNormal = Vector2D(0,-1)
 
 
-    return True, -hitNearTime, contactNormal, contactPoint
+    return True, hitNearTime, contactNormal, contactPoint
 
 
 
 
 
 def collision2D():
-    from Attributes import BC
-    for i in BC:
+    from Attributes import boxcollider
+    for i in boxcollider:
 
         i.BoxCollider.position = i.position + i.BoxCollider.localPosition
         if(type(i) != Circle):
@@ -110,25 +109,51 @@ def collision2D():
         i.BoxCollider.square.isVisible = i.BoxCollider.isVisible
 
 
-
-        for j in BC:
+        flag = False
+        for j in boxcollider:
             if i != j:
 
-                if (hasattr(i, "Rigidbody2D") and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
+                if (hasattr(i, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
                     collisions = []
                     collided, contactNormal, contactTime = DynamicAABB(i, j)
                     if (collided):
                         collisions.append([j, contactNormal, contactTime])
                     collisions.sort(key=lambda x: x[2])
                     for c in collisions:
-                        i.Rigidbody2D.velocity += abs(i.Rigidbody2D.velocity) * c[1]
+                        v1 = i.Rigidbody2D.velocity
+                        m1 = i.Rigidbody2D.mass
+
+                        i.Rigidbody2D.velocity += abs(v1) * c[1]
+
+
+                        if (hasattr(j, "Rigidbody2D")):
+
+                            v2 = j.Rigidbody2D.velocity
+                            m2 = j.Rigidbody2D.mass
+
+                            j.Rigidbody2D.velocity = (v2 * ((m2 - m1) / (m1 + m2))) + (v1 * ((2 * m1) / (m1 + m2))) * abs(c[1])
+
+                            # So They Would't Get Stuck
+                            # i.Rigidbody2D.velocity += c[1]
+
+
+
+
+
+
+
+
+
+
 
                 else:
-                    if(AABB(i, j)):
+                    if(AABB(i, j) and i.BoxCollider.isTrigger):
+                        flag = True
 
 
-                        i.BoxCollider.square.color = (255, 0, 0)
-                        j.BoxCollider.square.color = (255, 0, 0)
-                    else:
-                        i.BoxCollider.square.color = (0, 255, 0)
-                        j.BoxCollider.square.color = (0, 255, 0)
+
+        if (flag):
+            i.BoxCollider.square.color = (255, 0, 0)
+        else:
+            i.BoxCollider.square.color = (0, 255, 0)
+            pass

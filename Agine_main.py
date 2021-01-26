@@ -340,6 +340,8 @@ def Main():
     while not crashed.get("crashed"):
         Variables.deltaTime = 1/clock.get_fps()
         checkClose()
+        for update in updateFunctions:
+            update()
         gameDisplay.display.fill(gameDisplay.bgColor)
         physics2D()
         input()
@@ -360,6 +362,7 @@ def Main():
 #Setup
 pygame.init()
 gameDisplay = Window()
+updateFunctions = []
 
 while Variables.deltaTime == 0:
     for i in range(11):

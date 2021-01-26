@@ -3,7 +3,6 @@ import Variables
 from Collision2D import *
 from Objects2D import Vector2D
 
-RB2D = []
 
 
 class Force2D():
@@ -18,8 +17,8 @@ class Force2D():
 
 def physics2D():
     # RigidBody2D
-    from Attributes import  RB2D
-    for object in RB2D:
+    from Attributes import  rigidbody2d
+    for object in rigidbody2d:
         rb = object.Rigidbody2D
 
         #Gravity
