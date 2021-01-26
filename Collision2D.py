@@ -92,68 +92,64 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
 
 
-def collision2D():
+def collision2D(i):
     from Attributes import boxcollider
-    for i in boxcollider:
 
-        i.BoxCollider.position = i.position + i.BoxCollider.localPosition
-        if(type(i) != Circle):
-            i.BoxCollider.scale = i.scale + i.BoxCollider.localScale
-        if(type(i) == Circle):
-            i.BoxCollider.scale =  i.BoxCollider.localScale + i.radius * 2
+    for b in boxcollider:
 
-
-
-        i.BoxCollider.square.position = i.BoxCollider.position
-        i.BoxCollider.square.scale = i.BoxCollider.scale
-        i.BoxCollider.square.isVisible = i.BoxCollider.isVisible
-
-
-        flag = False
-        for j in boxcollider:
-            if i != j:
-
-                if (hasattr(i, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
-                    collisions = []
-                    collided, contactNormal, contactTime = DynamicAABB(i, j)
-                    if (collided):
-                        collisions.append([j, contactNormal, contactTime])
-                    collisions.sort(key=lambda x: x[2])
-                    for c in collisions:
-                        v1 = i.Rigidbody2D.velocity
-                        m1 = i.Rigidbody2D.mass
-
-                        i.Rigidbody2D.velocity += abs(v1) * c[1]
-
-
-                        if (hasattr(j, "Rigidbody2D")):
-
-                            v2 = j.Rigidbody2D.velocity
-                            m2 = j.Rigidbody2D.mass
-
-                            j.Rigidbody2D.velocity = (v2 * ((m2 - m1) / (m1 + m2))) + (v1 * ((2 * m1) / (m1 + m2))) * abs(c[1])
-
-                            # So They Would't Get Stuck
-                            # i.Rigidbody2D.velocity += c[1]
+        b.BoxCollider.position = b.position + b.BoxCollider.localPosition
+        if(type(b) != Circle):
+            b.BoxCollider.scale = b.scale + b.BoxCollider.localScale
+        if(type(b) == Circle):
+            b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
 
 
 
+        b.BoxCollider.square.position = b.BoxCollider.position
+        b.BoxCollider.square.scale = b.BoxCollider.scale
+        b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
 
 
+    flag = False
+    for j in reversed(sorted(boxcollider, key= lambda x: (hasattr(x, "Rigidbody2D")))):
+        if i != j:
+            if (hasattr(i, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
+                collisions = []
+                collided, contactNormal, contactTime = DynamicAABB(i, j)
+                if (collided):
+                    collisions.append([j, contactNormal, contactTime])
+                collisions.sort(key=lambda x: x[2])
+                for c in collisions:
+                    v1 = i.Rigidbody2D.velocity
+                    m1 = i.Rigidbody2D.mass
+
+                    if (hasattr(j, "Rigidbody2D")):
+
+                        v2 = j.Rigidbody2D.velocity
+                        m2 = j.Rigidbody2D.mass
+
+                        j.Rigidbody2D.velocity = (v2 * ((m2 - m1) / (m1 + m2))) + (v1 * ((2 * m1) / (m1 + m2))) * abs(c[1])
+
+                        # So They Would't Get Stuck
+                        i.Rigidbody2D.velocity += c[1]
+
+
+                    if (i.name == "controlled"): print("controlled Velocity - "+str(i.Rigidbody2D.velocity))
+                    i.Rigidbody2D.velocity += abs(v1) * c[1]
+                    if (i.name == "controlled"): print("Normal - "+str(abs(v1) * c[1]))
+                    if (i.name == "controlled"): print("controlled Velocity - "+str(i.Rigidbody2D.velocity))
 
 
 
 
-
-
-                else:
-                    if(AABB(i, j) and i.BoxCollider.isTrigger):
-                        flag = True
+            else:
+                if(AABB(i, j) and i.BoxCollider.isTrigger):
+                    flag = True
 
 
 
-        if (flag):
-            i.BoxCollider.square.color = (255, 0, 0)
-        else:
-            i.BoxCollider.square.color = (0, 255, 0)
-            pass
+    if (flag):
+        i.BoxCollider.square.color = (255, 0, 0)
+    else:
+        i.BoxCollider.square.color = (0, 255, 0)
+        pass

@@ -18,6 +18,9 @@ class Force2D():
 def physics2D():
     # RigidBody2D
     from Attributes import  rigidbody2d
+
+
+
     for object in rigidbody2d:
         rb = object.Rigidbody2D
 
@@ -41,11 +44,11 @@ def physics2D():
                 del force
 
         # Collision
-        collision2D()
-
+        collision2D(object)
 
 
         # Velocity
+        if (object.name == "controlled"): print("Move!!!")
         object.position += rb.velocity * Variables.deltaTime
 
     clock.tick(fps)
