@@ -48,7 +48,6 @@ def physics2D():
 
 
         # Velocity
-        if (object.name == "controlled"): print("Move!!!")
         object.position += rb.velocity * Variables.deltaTime
 
     clock.tick(fps)

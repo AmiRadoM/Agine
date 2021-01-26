@@ -84,7 +84,7 @@ class object2D():
 
 
 class Sprite(object2D):
-    def __init__(self, image, name = "", scale = Vector2D(100,100), color = (255,255,255,255), position = Vector2D(0,0), layer = 0):
+    def __init__(self, image, name = "", scale = Vector2D(100,100), color = (255,255,255,255), position = Vector2D(0,0), isVisible = True, layer = 0):
         self.scale = scale
         self.name = name
         if (scale.x != None or scale.y != None):
@@ -101,6 +101,7 @@ class Sprite(object2D):
         self.image.blit(colorImage, (0,0), special_flags = 3)
 
         self.position = position
+        self.isVisible = isVisible
         self.layer = layer
         Sprites2D.append(self)
 

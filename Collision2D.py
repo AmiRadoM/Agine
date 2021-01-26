@@ -134,10 +134,7 @@ def collision2D(i):
                         i.Rigidbody2D.velocity += c[1]
 
 
-                    if (i.name == "controlled"): print("controlled Velocity - "+str(i.Rigidbody2D.velocity))
                     i.Rigidbody2D.velocity += abs(v1) * c[1]
-                    if (i.name == "controlled"): print("Normal - "+str(abs(v1) * c[1]))
-                    if (i.name == "controlled"): print("controlled Velocity - "+str(i.Rigidbody2D.velocity))
 
 
 

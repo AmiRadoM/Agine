@@ -21,15 +21,15 @@ boxcollider = []
 class BoxCollider():
     def __init__(self, position = Vector2D(0,0), scale = Vector2D(0,0), isVisible = False, isTrigger = False):
 
-        self.position = Vector2D(0,0)
-        self.localPosition = position
-        self.scale = Vector2D(0,0)
-        self.localScale = scale
+        self.position = Vector2D.Zero()
+        self.localPosition = Vector2D.Zero()
+        self.scale = Vector2D.Zero()
+        self.localScale = Vector2D.Zero()
         self.isVisible = isVisible
         self.isTrigger = isTrigger
 
         from Objects2D import Square
-        self.square = Square(width=1, color =(0,255,0), isVisible=False)
+        self.square = Square(width=2, color =(0,255,0), isVisible=False)
 
 
 outline = []

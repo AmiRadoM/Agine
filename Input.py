@@ -6,17 +6,17 @@ from Objects2D import Vector2D
 KeyPressed = {"a": False, "b": False, "c": False, "d": False, "e": False, "f": False, "g": False, "h": False, "i": False, "j": False, "k": False, "l": False, "m": False, "n": False, "o": False, "p": False, "q": False, "r": False, "s": False, "t": False, "u": False, "v": False, "w": False, "x": False, "y": False, "z": False, "1": False, "2": False, "3": False, "4": False, "5": False, "6": False, "7": False, "8": False, "9": False, "0": False, "KP1": False, "KP2": False, "KP3": False, "KP4": False, "KP5": False, "KP6": False, "KP7": False, "KP8": False, "KP9": False, "KP0": False, "space": False, "lshift": False, "lctrl": False, "lalt": False, "rshift": False, "rctrl": False, "ralt": False,"up": False, "down": False,"left": False,"right": False, }
 KeyDown = {"a": False, "b": False, "c": False, "d": False, "e": False, "f": False, "g": False, "h": False, "i": False, "j": False, "k": False, "l": False, "m": False, "n": False, "o": False, "p": False, "q": False, "r": False, "s": False, "t": False, "u": False, "v": False, "w": False, "x": False, "y": False, "z": False, "1": False, "2": False, "3": False, "4": False, "5": False, "6": False, "7": False, "8": False, "9": False, "0": False, "KP1": False, "KP2": False, "KP3": False, "KP4": False, "KP5": False, "KP6": False, "KP7": False, "KP8": False, "KP9": False, "KP0": False, "space": False, "lshift": False, "lctrl": False, "lalt": False, "rshift": False, "rctrl": False, "ralt": False,"up": False, "down": False,"left": False,"right": False, }
 KeyUp = {"a": False, "b": False, "c": False, "d": False, "e": False, "f": False, "g": False, "h": False, "i": False, "j": False, "k": False, "l": False, "m": False, "n": False, "o": False, "p": False, "q": False, "r": False, "s": False, "t": False, "u": False, "v": False, "w": False, "x": False, "y": False, "z": False, "1": False, "2": False, "3": False, "4": False, "5": False, "6": False, "7": False, "8": False, "9": False, "0": False, "KP1": False, "KP2": False, "KP3": False, "KP4": False, "KP5": False, "KP6": False, "KP7": False, "KP8": False, "KP9": False, "KP0": False, "space": False, "lshift": False, "lctrl": False, "lalt": False, "rshift": False, "rctrl": False, "ralt": False,"up": False, "down": False,"left": False,"right": False, }
-InputMouse = {"click0" : False, "click1" : False, "click2": False}
+
+MousePressed = {"button0" : False, "button1" : False, "button2": False}
+MouseDown = {"button0" : False, "button1" : False, "button2": False}
+MouseUp = {"button0" : False, "button1" : False, "button2": False}
+
 mousePos = Vector2D(0,0)
 
 
 def input():
-    from Agine_main import gameDisplay, cameraPos
-    mousePos.x = pygame.mouse.get_pos()[0] - gameDisplay.display.get_width() / 2 + cameraPos[0]
-    mousePos.y = -pygame.mouse.get_pos()[1]  + gameDisplay.display.get_width() / 2 + cameraPos[0]
 
-
-    #keyboard
+    #KEYBOARD
     #Pressed
     keyPressed = pygame.key.get_pressed()
 
@@ -296,7 +296,7 @@ def input():
     else:
         KeyUp["ralt"] = False
 
-    #DOWN
+    #Down
     event = pygame.event.get(pygame.KEYDOWN)
     for e in event:
         #letters
@@ -330,7 +330,7 @@ def input():
 
         KeyDown["space"] = e.key == pygame.K_SPACE
 
-    #UP
+    #Up
     event = pygame.event.get(pygame.KEYUP)
     for e in event:
         # letters
@@ -362,3 +362,48 @@ def input():
         KeyDown["z"] = e.key == pygame.K_z
 
         KeyUp["space"] = e.key == pygame.K_SPACE
+
+
+
+
+
+
+
+
+
+    #MOUSE
+
+    from Agine_main import gameDisplay, cameraPos
+    #Mouse Position
+    mousePos.x = pygame.mouse.get_pos()[0] - gameDisplay.display.get_width() / 2 + cameraPos[0]
+    mousePos.y = -pygame.mouse.get_pos()[1]  + gameDisplay.display.get_width() / 2 + cameraPos[0]
+
+
+
+    #Pressed
+    mousePressed = pygame.mouse.get_pressed()
+
+    MousePressed["button0"] = mousePressed[0]
+    if MousePressed["button0"]:
+        MouseDown["button0"] = False
+    else:
+        MouseUp["button0"] = False
+
+
+
+    #Down
+    event = pygame.event.get(pygame.MOUSEBUTTONDOWN)
+    for e in event:
+        MouseDown["button0"] = e.button == pygame.BUTTON_LEFT
+        MouseDown["button1"] = e.button == pygame.BUTTON_MIDDLE
+        MouseDown["button2"] = e.button == pygame.BUTTON_RIGHT
+
+
+    # Up
+    event = pygame.event.get(pygame.MOUSEBUTTONUP)
+    for e in event:
+        MouseUp["button0"] = e.button == pygame.BUTTON_LEFT
+        MouseUp["button1"] = e.button == pygame.BUTTON_MIDDLE
+        MouseUp["button2"] = e.button == pygame.BUTTON_RIGHT
+
+
