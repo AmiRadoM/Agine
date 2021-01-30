@@ -1,7 +1,6 @@
-from Variables import *
-import Variables
-from Collision2D import *
-from Objects2D import Vector2D
+from .Variables import *
+from .Collision2D import *
+from .Objects2D import Vector2D
 
 
 
@@ -16,8 +15,9 @@ class Force2D():
 
 
 def physics2D():
-    # RigidBody2D
-    from Attributes import  rigidbody2d
+    from .Attributes import  rigidbody2d
+    from .Agine_main import gameDisplay
+
 
 
 
@@ -26,7 +26,8 @@ def physics2D():
 
         #Gravity
         if (rb.useGravity):
-                rb.velocity += rb.gravity
+
+            rb.velocity += rb.gravity * (gameDisplay.scale / 1000)
 
 
         for force in rb.forces:
@@ -48,7 +49,7 @@ def physics2D():
 
 
         # Velocity
-        object.position += rb.velocity * Variables.deltaTime
+        object.Transform2D.position += rb.velocity * Variables.deltaTime
 
     clock.tick(fps)
 

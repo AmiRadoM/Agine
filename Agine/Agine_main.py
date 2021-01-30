@@ -7,13 +7,13 @@ import threading
 import pygame
 from pygame.locals import *
 import pygame.gfxdraw
-from Variables import *
-import Variables
-from Objects2D import *
-from Physics2D import *
-from Collision2D import *
-from Objects3D import *
-from Input import *
+from .Variables import *
+import Agine.Variables as Variables
+from .Objects2D import *
+from .Physics2D import *
+from .Collision2D import *
+from .Objects3D import *
+from .Input import *
 
 
 cameraPos = [0,0,0]
@@ -24,14 +24,16 @@ lookDir = [0,0,1]
 
 
 class Window():
-    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], width = 1000, height = 1000):
-        self.display = pygame.display.set_mode((width,height),DOUBLEBUF|HWSURFACE|RESIZABLE)
-        #self.display = pygame.display.set_mode((width,height),DOUBLEBUF|OPENGL)
+    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector2D(1000,1000)):
+        self.scale = scale
+        self.originalScale = scale
         self.bgColor = backgroundColor
-        self.width = width
-        self.height = height
-
+        self.display = pygame.display.set_mode((self.originalScale.x,self.originalScale.y),DOUBLEBUF|HWSURFACE|RESIZABLE)
         pygame.display.set_caption(title)
+
+    def ProportionedScale(self, scale):
+        return self.scale * (scale / self.originalScale)
+
 
 
 def translatePoints(sprite):
@@ -71,53 +73,117 @@ class Draw():
         cY = -(position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
         pygame.draw.circle(gameDisplay.display, color, (cX, cY), radius, width)
 
+# def renderer2D():
+#     # mousePos = pygame.mouse.get_pos()
+#
+#     # Render Background
+#
+#
+#     # Bubble Sort Sprite Layers
+#     # n = len(Sprites)
+#     n = len(Sprites2D)
+#     for i in range(n - 1):
+#
+#         for j in range(0, n - i - 1):
+#
+#             # if Sprites[j].layer > Sprites[j+1].layer :
+#             #     Sprites[j], Sprites[j+1] = Sprites[j+1], Sprites[j]
+#             if Sprites2D[j].layer > Sprites2D[j + 1].layer:
+#                 Sprites2D[j], Sprites2D[j + 1] = Sprites2D[j + 1], Sprites2D[j]
+#
+#     # Render Sprites
+#
+#     # 2D!!!!
+#     for sprite in Sprites2D:
+#         # Sprite
+#         if(sprite.isVisible):
+#
+#             if type(sprite) != Circle  and type(sprite) != Polygon and type(sprite) != Line:
+#                 x = sprite.position.x - sprite.scale.x / 2 + gameDisplay.display.get_width() / 2 - cameraPos[0]
+#                 y = -(sprite.position.y + sprite.scale.y / 2 - gameDisplay.display.get_height() / 2 - cameraPos[1])
+#
+#             if (type(sprite) == Line):
+#                 startX = sprite.startPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+#                 startY = -(sprite.startPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
+#                 endX = sprite.endPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+#                 endY = -(sprite.endPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
+#                 pygame.draw.line(gameDisplay.display, sprite.color, [startX, startY], [endX, endY], sprite.width)
+#
+#             if (type(sprite) == Square):
+#                 pygame.draw.rect(gameDisplay.display, sprite.color, (x, y, sprite.scale.x, sprite.scale.y), sprite.width)
+#
+#
+#             if type(sprite) == ImageByPixels:
+#                 for i in range(sprite.width):
+#                     for j in range(sprite.height):
+#                         pygame.gfxdraw.pixel(gameDisplay.display, int(x + i), int(y + j), sprite.pixels[j][i])
+#
+#             if type(sprite) == Sprite:
+#                 gameDisplay.display.blit(sprite.image, (x, y))
+#
+#             if type(sprite) == Polygon:
+#                 translatedPoints = translatePoints(sprite)
+#                 sprite.translatedPoints = translatedPoints
+#
+#                 pygame.draw.polygon(gameDisplay.display, sprite.color, sprite.translatedPoints, sprite.width)
+#
+#             if type(sprite) == Circle:
+#                 cX = sprite.position.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
+#                 cY = -(sprite.position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
+#                 pygame.draw.circle(gameDisplay.display, sprite.color, (cX, cY), sprite.radius, sprite.width)
+
+
 def renderer2D():
-    # mousePos = pygame.mouse.get_pos()
-
-    # Render Background
-
 
     # Bubble Sort Sprite Layers
     # n = len(Sprites)
-    n = len(Sprites2D)
+    n = len(object2D)
     for i in range(n - 1):
 
         for j in range(0, n - i - 1):
 
             # if Sprites[j].layer > Sprites[j+1].layer :
             #     Sprites[j], Sprites[j+1] = Sprites[j+1], Sprites[j]
-            if Sprites2D[j].layer > Sprites2D[j + 1].layer:
-                Sprites2D[j], Sprites2D[j + 1] = Sprites2D[j + 1], Sprites2D[j]
+            if object2D[j].layer > object2D[j + 1].layer:
+                object2D[j], object2D[j + 1] = object2D[j + 1], object2D[j]
 
     # Render Sprites
 
     # 2D!!!!
-    for sprite in Sprites2D:
-        # Sprite
-        if(sprite.isVisible):
+    def render2D(sprite):
+        if (sprite.isVisible):
 
-            if type(sprite) != Circle  and type(sprite) != Polygon and type(sprite) != Line:
-                x = sprite.position.x - sprite.scale.x / 2 + gameDisplay.display.get_width() / 2 - cameraPos[0]
-                y = -(sprite.position.y + sprite.scale.y / 2 - gameDisplay.display.get_height() / 2 - cameraPos[1])
+            if type(sprite) != Circle and type(sprite) != Polygon and type(sprite) != Line:
+                newPos = cam.Camera.ScreenToWorldVector2D(
+                    Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,
+                             sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
 
             if (type(sprite) == Line):
-                startX = sprite.startPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-                startY = -(sprite.startPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
-                endX = sprite.endPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-                endY = -(sprite.endPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
-                pygame.draw.line(gameDisplay.display, sprite.color, [startX, startY], [endX, endY], sprite.width)
+                startVector = cam.Camera.ScreenToWorldVector2D(sprite.startPoint)
+                endVector = cam.Camera.ScreenToWorldVector2D(sprite.endPoint)
+                pygame.draw.line(gameDisplay.display, sprite.color, [startVector.x, startVector.y],
+                                 [endVector.x, endVector.y], sprite.width)
 
             if (type(sprite) == Square):
-                pygame.draw.rect(gameDisplay.display, sprite.color, (x, y, sprite.scale.x, sprite.scale.y), sprite.width)
-
+                pygame.draw.rect(gameDisplay.display, sprite.color,
+                                 (newPos.x, newPos.y, sprite.Transform2D.scale.x, sprite.Transform2D.scale.y),
+                                 sprite.width)
 
             if type(sprite) == ImageByPixels:
                 for i in range(sprite.width):
                     for j in range(sprite.height):
-                        pygame.gfxdraw.pixel(gameDisplay.display, int(x + i), int(y + j), sprite.pixels[j][i])
+                        pygame.gfxdraw.pixel(gameDisplay.display, int(newPos.x + i), int(newPos.y + j),
+                                             sprite.pixels[j][i])
 
             if type(sprite) == Sprite:
-                gameDisplay.display.blit(sprite.image, (x, y))
+                newImage = pygame.transform.scale(sprite.image, sprite.Transform2D.scale.ToList())
+                newImage = newImage.convert_alpha()
+
+                colorImage = pygame.Surface(newImage.get_rect().size, pygame.SRCALPHA)
+                colorImage.fill(sprite.color)
+                newImage.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
+
+                gameDisplay.display.blit(newImage, (newPos.x, newPos.y))
 
             if type(sprite) == Polygon:
                 translatedPoints = translatePoints(sprite)
@@ -129,6 +195,56 @@ def renderer2D():
                 cX = sprite.position.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
                 cY = -(sprite.position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
                 pygame.draw.circle(gameDisplay.display, sprite.color, (cX, cY), sprite.radius, sprite.width)
+
+
+    for cam in camera:
+        for sprite in object2D:
+            #Outline
+            if (hasattr(sprite, "Outline")):
+                if (type(sprite) == Sprite):
+                    newPos = cam.Camera.ScreenToWorldVector2D(
+                        Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,
+                                 sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
+
+                    newImage = pygame.transform.scale(sprite.image, sprite.Transform2D.scale.ToList())
+
+                    outline = pygame.mask.from_surface(newImage)
+                    outlineSurface = outline.to_surface()
+                    outlineSurface.set_colorkey([0,0,0])
+
+                    newSurface = pygame.Surface(outlineSurface.get_size()).convert_alpha()
+                    newSurface.fill([0,0,0,0])
+                    newSurface.blit(outlineSurface, (0,0))
+
+                    # colorImage = pygame.Surface(outlineSurface.get_size()).convert_alpha()
+                    # colorImage.fill(sprite.Outline.color)
+                    # newSurface.blit(colorImage, (0, 0), special_flags=BLEND_MULT)
+
+                    colorImage = pygame.Surface(newSurface.get_rect().size, pygame.SRCALPHA)
+                    colorImage.fill(sprite.Outline.color)
+                    newSurface.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
+                    newSurface.blit(outlineSurface, (0, 0), special_flags=BLEND_RGBA_MULT)
+
+                    gameDisplay.display.blit(newSurface, (newPos.x - sprite.Outline.width.x, newPos.y))
+                    gameDisplay.display.blit(newSurface, (newPos.x + sprite.Outline.width.x, newPos.y))
+                    gameDisplay.display.blit(newSurface, (newPos.x, newPos.y - sprite.Outline.width.y))
+                    gameDisplay.display.blit(newSurface, (newPos.x, newPos.y + sprite.Outline.width.y))
+                else:
+                    outline = copy.deepcopy(sprite)
+                    outline.color = sprite.Outline.color
+
+                    outline.Transform2D.position.x += sprite.Outline.width.x
+                    render2D(outline)
+                    outline.Transform2D.position.x -= 2 * sprite.Outline.width.x
+                    render2D(outline)
+                    outline.Transform2D.position.x += sprite.Outline.width.x
+                    outline.Transform2D.position.y += sprite.Outline.width.y
+                    render2D(outline)
+                    outline.Transform2D.position.y -= 2 * sprite.Outline.width.y
+                    render2D(outline)
+
+            # Sprite
+            render2D(sprite)
 
 
 
@@ -333,6 +449,29 @@ def checkClose():
             crashed["crashed"] = True
 
 
+def checkScreenResize():
+    for event in pygame.event.get(pygame.VIDEORESIZE):
+        if (event.type == pygame.VIDEORESIZE):
+            if (gameDisplay.scale.x != event.w and gameDisplay.scale.y == event.h):
+                proportion = gameDisplay.scale.x / gameDisplay.scale.y
+                gameDisplay.scale.x = event.w
+                gameDisplay.scale.y = (1/proportion) * gameDisplay.scale.x
+            elif (gameDisplay.scale.x == event.w and gameDisplay.scale.y != event.h):
+                proportion = gameDisplay.scale.x/gameDisplay.scale.y
+                gameDisplay.scale.y = event.h
+                gameDisplay.scale.x = proportion * gameDisplay.scale.y
+            else:
+                maxDimension = max(event.w, event.h)
+                if(maxDimension == event.w):
+                    proportion = gameDisplay.scale.x / gameDisplay.scale.y
+                    gameDisplay.scale.x = event.w
+                    gameDisplay.scale.y = (1 / proportion) * gameDisplay.scale.x
+                else:
+                    proportion = gameDisplay.scale.x / gameDisplay.scale.y
+                    gameDisplay.scale.y = event.h
+                    gameDisplay.scale.x = proportion * gameDisplay.scale.y
+
+            gameDisplay.display = pygame.display.set_mode((int(gameDisplay.scale.x), int(gameDisplay.scale.y)), DOUBLEBUF|HWSURFACE|RESIZABLE)
 
 
 
@@ -340,6 +479,7 @@ def Main():
     while not crashed.get("crashed"):
         Variables.deltaTime = 1/clock.get_fps()
         checkClose()
+        checkScreenResize()
         for update in updateFunctions:
             update()
         gameDisplay.display.fill(gameDisplay.bgColor)
@@ -348,7 +488,7 @@ def Main():
         renderer2D()
         renderer3D()
         pygame.display.flip()
-        clock.tick(fps)
+        clock.tick( fps)
 
 
     pygame.quit()
@@ -364,7 +504,9 @@ pygame.init()
 gameDisplay = Window()
 updateFunctions = []
 
+gameDisplay.scale = copy.copy(gameDisplay.originalScale)
+
 while Variables.deltaTime == 0:
     for i in range(11):
-        clock.tick(fps)
-    Variables.deltaTime = 1/clock.get_fps()
+        Variables.clock.tick(fps)
+    Variables.deltaTime = 1/Variables.clock.get_fps()

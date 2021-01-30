@@ -2,7 +2,7 @@ from Agine import *
 import threading
 
 def update():
-    speed = 500
+    speed = 800
     if(KeyPressed["d"]):
         s1.Rigidbody2D.velocity = Vector2D(speed , s1.Rigidbody2D.velocity.y)
     if (KeyPressed["a"]):
@@ -13,6 +13,7 @@ def update():
     if(KeyDown["space"]):
         s1.Rigidbody2D.velocity = Vector2D(s1.Rigidbody2D.velocity.x, 2000)
 
+    cam1.Transform2D.position = s1.Transform2D.position
     pass
 
 
@@ -22,6 +23,20 @@ def update():
 
 def start():
 
+    cam1.addAttr("Camera")
+
+    s1.color = [255,0,0, 100]
+
+    ground.Transform2D.scale = Vector2D(500,500)
+    s1.Transform2D.scale = Vector2D(100,100)
+    s1.Transform2D.position = Vector2D(0, 350)
+
+    ground.addAttr("Outline")
+    ground.Outline.width = Vector2D(3,3)
+
+    s1.addAttr("Outline")
+    s1.Outline.color = [0,0,0,100]
+    s1.Outline.width = Vector2D(500, 500)
 
     ground.addAttr("BoxCollider")
     #
@@ -29,27 +44,28 @@ def start():
     # s2.addAttr("BoxCollider")
     #
     #
-    s1.BoxCollider.localScale.x = -25
+    s1.BoxCollider.localScale.x = 0.5
+    ground.BoxCollider.isVisible = True
+    s1.BoxCollider.isVisible = True
     #
     #
     #
     s1.addAttr("Rigidbody2D")
     # s2.addAttr("Rigidbody2D")
 
+
     pass
 
 #Variables
 
-camera = object2D().addAttr("Camera")
+cam1 = Object2D()
+cam2 = Object2D()
 
-ground = Square(position= Vector2D(-0,-0), scale = Vector2D(100,100))
+ground = Square()
 
 l1 = Line(endPoint=Vector2D(0,100))
 
-s1 = Sprite(image= "Character.png",name= "controlled",position=Vector2D(-100,200), scale= Vector2D(50,50))
-# s2 = Square(name= "notControlled",position=Vector2D(-50,200), scale= Vector2D(50,50))
-# s3 = Square(name= "controlled",position=Vector2D(-0,-100), scale= Vector2D(50,50))
-# s4 = Square(name= "notControlled",position= Vector2D(51,-100), scale = Vector2D(50,50))
+s1 = Sprite(image= "Character.png")
 
 
 start()

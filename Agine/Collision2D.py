@@ -1,6 +1,6 @@
-from Objects2D import *
-import Variables
-from Attributes import *
+from .Objects2D import *
+import Agine.Variables as Variables
+from .Attributes import *
 
 
 def AABB(object1, object2):
@@ -93,20 +93,20 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
 
 def collision2D(i):
-    from Attributes import boxcollider
+    from .Attributes import boxcollider
 
     for b in boxcollider:
 
-        b.BoxCollider.position = b.position + b.BoxCollider.localPosition
+        b.BoxCollider.position = b.Transform2D.position + b.BoxCollider.localPosition
         if(type(b) != Circle):
-            b.BoxCollider.scale = b.scale + b.BoxCollider.localScale
+            b.BoxCollider.scale = b.Transform2D.scale * b.BoxCollider.localScale
         if(type(b) == Circle):
             b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
 
 
 
-        b.BoxCollider.square.position = b.BoxCollider.position
-        b.BoxCollider.square.scale = b.BoxCollider.scale
+        b.BoxCollider.square.Transform2D.position = b.BoxCollider.position
+        b.BoxCollider.square.Transform2D.scale = b.BoxCollider.scale
         b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
 
 

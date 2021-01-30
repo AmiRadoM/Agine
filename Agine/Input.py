@@ -1,5 +1,5 @@
 import pygame
-from Objects2D import Vector2D
+from .Objects2D import Vector2D
 
 
 
@@ -370,10 +370,9 @@ def input():
 
 
 
-
     #MOUSE
 
-    from Agine_main import gameDisplay, cameraPos
+    from .Agine_main import gameDisplay, cameraPos
     #Mouse Position
     mousePos.x = pygame.mouse.get_pos()[0] - gameDisplay.display.get_width() / 2 + cameraPos[0]
     mousePos.y = -pygame.mouse.get_pos()[1]  + gameDisplay.display.get_width() / 2 + cameraPos[0]
