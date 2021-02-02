@@ -105,10 +105,12 @@ def collision2D(i):
             b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
 
 
-
-        b.BoxCollider.square.Transform2D.position = b.BoxCollider.position
-        b.BoxCollider.square.Transform2D.scale = b.BoxCollider.scale
-        b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
+        if (b.BoxCollider.isVisible):
+            for cam in camera:
+                cam.Camera.Draw.Square(position=b.BoxCollider.position, scale= b.BoxCollider.scale,color= [0,255,0], width= 3)
+        # b.BoxCollider.square.Transform2D.position = b.BoxCollider.position
+        # b.BoxCollider.square.Transform2D.scale = b.BoxCollider.scale
+        # b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
 
 
     flag = False
@@ -147,7 +149,8 @@ def collision2D(i):
 
 
     if (flag):
-        i.BoxCollider.square.color = (255, 0, 0)
+        #Trigger Function
+        pass
     else:
-        i.BoxCollider.square.color = (0, 255, 0)
+        #Exit Trigger Function
         pass

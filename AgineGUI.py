@@ -6,27 +6,22 @@ import os
 #Variables
 projectsPath = "./AgineProjects"
 
-newProjectMain = """from Variables import *
+newProjectMain = """
 from Agine_main import *
-import threading
 
 
 def update():
-    while not crashed.get("crashed"):
-        pass
-
-
-def start():
     pass
 
-#Variables
 
-start()
+#Start
 
-#threading
-updateThread = threading.Thread(target=update,args=())
-updateThread.start()
-Main()"""
+
+
+#Init
+updateFunctions.append(update)
+Main()
+"""
 
 ##########
 #Functions

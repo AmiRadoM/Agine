@@ -1,14 +1,11 @@
+from .Attributes import  Attribute
 
 
-
-class Text():
-    def __init__(self, name = "", text = "New Text", position = [0,0]):
-        self.name = name
+class Text(Attribute):
+    def __init__(self, text = "New Text", fontPath = ""):
         self.text = text
-        self.x = position[0]
-        self.y = position[1]
-        SpritesUI.append(self)
+        self.fontPath = fontPath
 
 
 
-SpritesUI = []
+objectsUI = []

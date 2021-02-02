@@ -1,5 +1,5 @@
 from Agine import *
-import threading
+
 
 def update():
     speed = 5
@@ -22,39 +22,41 @@ def update():
         
 
 
-def start():
+#Start
 
-
-    s1.Transform2D.position = Vector2D(0, 1)
-
-
-    ground.addAttr("BoxCollider")
-
-    s1.addAttr("BoxCollider")
-
-    s1.BoxCollider.localScale.x = 0.5
-    ground.BoxCollider.isVisible = True
-    s1.BoxCollider.isVisible = True
-
-
-    s1.addAttr("Rigidbody2D")
-    s1.Rigidbody2D.gravity = Vector2D(0, -0.1)
-
-
-    pass
-
-#Variables
-
-cam1 = Object2D()
+cam1 = GameObject()
 cam1.addAttr("Camera")
 
-ground = Square()
+ground = GameObject()
+ground.addAttr("Square")
 
-s1 = Sprite(image= "Character.png")
+s1 = GameObject()
+s1.addAttr("Sprite")
+s1.Sprite.imagePath = "character.png"
 
 
-start()
+s1.Transform2D.position = Vector2D(0, 1)
 
-#threading
+
+ground.addAttr("BoxCollider")
+
+s1.addAttr("BoxCollider")
+
+s1.BoxCollider.localScale.x = 0.5
+ground.BoxCollider.isVisible = True
+s1.BoxCollider.isVisible = True
+
+
+s1.addAttr("Rigidbody2D")
+s1.Rigidbody2D.gravity = Vector2D(0, -0.1)
+
+
+
+
+
+
+
+
+#Init
 updateFunctions.append(update)
 Main()

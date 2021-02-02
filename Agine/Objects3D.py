@@ -389,7 +389,7 @@ class Cube3D():
 
         
 
-        Sprites3D.append(self)
+        objects3D.append(self)
 
     def Move(self, x=0,y=0,z=0):
         self.x += x
@@ -417,7 +417,7 @@ class Sphere3D():
         self.scalez = scale[2]
         self.layer = layer
 
-        Sprites3D.append(self)
+        objects3D.append(self)
 
     def Move(self, x=0, y=0, z=0):
         self.x += x
@@ -444,7 +444,7 @@ class Object3D():
         self.scalez = scale[2]
         self.layer = layer
 
-        Sprites3D.append(self)
+        objects3D.append(self)
     
     def Move(self, x=0,y=0,z=0):
         self.x += x
@@ -461,4 +461,4 @@ class Object3D():
 
 
 
-Sprites3D = []
+objects3D = []

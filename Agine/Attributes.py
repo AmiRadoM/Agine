@@ -1,4 +1,3 @@
-from Agine.Objects2D import Vector2D
 
 
 class Attribute():
@@ -8,6 +7,7 @@ class Attribute():
 transform = []
 class Transform2D(Attribute):
     def __init__(self):
+        from Agine.Objects2D import Vector2D
         self.position = Vector2D.Zero()
         self.scale = Vector2D(1,1)
         self.rotation = 0
@@ -15,8 +15,12 @@ class Transform2D(Attribute):
 
 rigidbody2d = []
 class Rigidbody2D(Attribute):
-    def __init__(self, gravity = Vector2D(0,-9.81), mass = 1, useGravity = True):
-        self.gravity = gravity  # m/s^2
+    def __init__(self, gravity = None, mass = 1, useGravity = True):
+        from Agine.Objects2D import Vector2D
+        if (gravity == None):
+            self.gravity = Vector2D(0,-9.81)  # m/s^2
+        else:
+            self.gravity = gravity
         self.mass = mass  # kg
         self.velocity = Vector2D(0,0)  # m/s
 
@@ -24,7 +28,7 @@ class Rigidbody2D(Attribute):
 
         self.forces = []
 
-    def addForce(self, force = Vector2D(0,0), type = "acceleration"):
+    def addForce(self, force, type = "acceleration"):
         from Physics2D import Force2D
 
         self.forces.append(Force2D(force,type))
@@ -32,17 +36,14 @@ class Rigidbody2D(Attribute):
 
 boxcollider = []
 class BoxCollider(Attribute):
-    def __init__(self, position = Vector2D(0,0), scale = Vector2D(0,0), isVisible = False, isTrigger = False):
-
+    def __init__(self, isVisible = False, isTrigger = False):
+        from Agine.Objects2D import Vector2D
         self.position = Vector2D.Zero()
         self.localPosition = Vector2D.Zero()
         self.scale = Vector2D.Zero()
         self.localScale = Vector2D(1,1)
         self.isVisible = isVisible
         self.isTrigger = isTrigger
-
-        from .Objects2D import Square
-        self.square = Square(width=2, color =(0,255,0), isVisible=False)
 
 
 camera = []
@@ -62,6 +63,7 @@ class Camera(Attribute):
             self.cam = cam
 
         def Square(self, position, scale, color, width):
+            from Agine.Objects2D import Vector2D
             from .Agine_main import gameDisplay
             import pygame
             newPos = self.cam.ScreenToWorldVector2D(
@@ -109,6 +111,10 @@ class Camera(Attribute):
 
 outline = []
 class Outline(Attribute):
-    def __init__(self, width = Vector2D(), color = [0,0,0]):
-        self.width = width
+    def __init__(self, width = None, color = [0,0,0]):
+        from Agine.Objects2D import Vector2D
+        if (width == None):
+            self.width = Vector2D(5, 5)
+        else:
+            self.width = Vector2D()
         self.color = color

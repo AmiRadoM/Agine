@@ -36,15 +36,44 @@ class Window():
 
 
 
+class GameObject():
+    def __init__(self, name = "GameObject", layer = 0, isVisible = True):
+        import Agine.Attributes as Attributes
+        self.name = name
+        self.layer = layer
+        self.isVisible = isVisible
+        self.Transform2D = Attributes.Transform2D()
+        objects2D.append(self)
+
+    def addAttr(self, attr):
+        import Agine.Attributes as Attributes
+        """
+        :param attr: The name of the attribute
+        """
+        try:
+            if(not Attributes.Attribute in eval( attr).__bases__):
+                raise TypeError("Missing an Agine2D Attribute Name!")
+            exec(f"self.{attr} = {attr}()")
+            eval(f"self.{attr}").owner = self
+            eval(attr.lower()).append(self)
+        except:
+            raise TypeError("Missing an Agine2D Attribute Name!")
+
+    def __del__(self):
+        objects2D.remove(self)
+
+
+
+
 def translatePoints(sprite):
-    allX = [point.x for point in sprite.points]
-    allY = [point.y for point in sprite.points]
-    allX = [x * sprite.scale.x for x in allX]
-    allY = [y * sprite.scale.y for y in allY]
+    allX = [point.x for point in sprite.Polygon.points]
+    allY = [point.y for point in sprite.Polygon.points]
+    allX = [x * sprite.Transform2D.scale.x for x in allX]
+    allY = [y * sprite.Transform2D.scale.y for y in allY]
     avarageX = sum(allX) / len(allX)
     avarageY = sum(allY) / len(allY)
 
-    deltaX = (sprite.x - avarageX )
+    deltaX = (sprite.x - avarageX)
     deltaY = (sprite.y - avarageY)
 
     translatedPoints = [Vector2D((allX[i] + deltaX) + gameDisplay.display.get_width() / 2 - cameraPos[0] , -((allY[i] + deltaY) - gameDisplay.display.get_height() / 2 - cameraPos[1])) for i in range(len(allX))]
@@ -114,18 +143,8 @@ def translatePoints(sprite):
 #                 pygame.draw.circle(gameDisplay.display, sprite.color, (cX, cY), sprite.radius, sprite.width)
 
 
-def renderer2D():
-
-    # Bubble Sort Sprite Layers
-    n = len(object2D)
-    for i in range(n - 1):
-
-        for j in range(0, n - i - 1):
-
-            if object2D[j].layer > object2D[j + 1].layer:
-                object2D[j], object2D[j + 1] = object2D[j + 1], object2D[j]
-
-    # Render Sprites
+def renderer():
+    trianglesToRaster = []
 
     # 2D!!!!
     def render2D(sprite):
@@ -135,112 +154,62 @@ def renderer2D():
                 newScale = (sprite.Transform2D.scale * gameDisplay.scale/2) / cam.Camera.scale
                 newPos = cam.Camera.ScreenToWorldVector2D(Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
 
-            if (type(sprite) == Line):
-                startVector = cam.Camera.ScreenToWorldVector2D(sprite.startPoint)
-                endVector = cam.Camera.ScreenToWorldVector2D(sprite.endPoint)
-                pygame.draw.line(gameDisplay.display, sprite.color, [startVector.x, startVector.y],
-                                 [endVector.x, endVector.y], sprite.width)
+            if (hasattr(sprite, "Line")):
+                startVector = cam.Camera.ScreenToWorldVector2D(sprite.Line.startPoint)
+                endVector = cam.Camera.ScreenToWorldVector2D(sprite.Line.endPoint)
+                pygame.draw.line(gameDisplay.display, sprite.Line.color, [startVector.x, startVector.y],
+                                 [endVector.x, endVector.y], sprite.Line.width)
 
-            if (type(sprite) == Square):
-                pygame.draw.rect(gameDisplay.display, sprite.color,
+            if (hasattr(sprite, "Square")):
+                pygame.draw.rect(gameDisplay.display, sprite.Square.color,
                                  (newPos.x, newPos.y, newScale.x, newScale.y),
-                                 sprite.width)
+                                 sprite.Square.width)
 
-            if type(sprite) == ImageByPixels:
-                for i in range(sprite.width):
-                    for j in range(sprite.height):
-                        pygame.gfxdraw.pixel(gameDisplay.display, int(newPos.x + i), int(newPos.y + j),
-                                             sprite.pixels[j][i])
 
-            if type(sprite) == Sprite:
-                newImage = pygame.transform.scale(sprite.image, [int(a) for a in newScale.ToList()])
-                newImage = newImage.convert_alpha()
+            if hasattr(sprite, "Sprite"):
+                if(sprite.Sprite.imagePath != None):
+                    img = pygame.image.load(os.path.join(assetsPath,sprite.Sprite.imagePath))
+                    newImage = pygame.transform.scale(img, [int(a) for a in newScale.ToList()])
+                    newImage = newImage.convert_alpha()
 
-                colorImage = pygame.Surface(newImage.get_rect().size, pygame.SRCALPHA)
-                colorImage.fill(sprite.color)
-                newImage.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
+                    colorImage = pygame.Surface(newImage.get_rect().size, pygame.SRCALPHA)
+                    colorImage.fill(sprite.Sprite.color)
+                    newImage.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
 
-                gameDisplay.display.blit(newImage, (newPos.x, newPos.y))
+                    gameDisplay.display.blit(newImage, (newPos.x, newPos.y))
 
-            if type(sprite) == Polygon:
-                translatedPoints = translatePoints(sprite)
-                sprite.translatedPoints = translatedPoints
+            if hasattr(sprite, "Polygon"):
+                allX = [point.x for point in sprite.Polygon.points]
+                allY = [point.y for point in sprite.Polygon.points]
+                allX = [x * sprite.Transform2D.scale.x for x in allX]
+                allY = [y * sprite.Transform2D.scale.y for y in allY]
+                avarageX = sum(allX) / len(allX)
+                avarageY = sum(allY) / len(allY)
 
-                pygame.draw.polygon(gameDisplay.display, sprite.color, sprite.translatedPoints, sprite.width)
+                deltaX = (sprite.x - avarageX)
+                deltaY = (sprite.y - avarageY)
 
-            if type(sprite) == Circle:
+                translatedPoints = [Vector2D((allX[i] + deltaX) + gameDisplay.display.get_width() / 2 - cameraPos[0], -(
+                            (allY[i] + deltaY) - gameDisplay.display.get_height() / 2 - cameraPos[1])) for i in
+                                    range(len(allX))]
+
+
+                pygame.draw.polygon(gameDisplay.display, sprite.Polygon.color, translatedPoints, sprite.Polygon.width)
+
+            if hasattr(sprite, "Circle"):
                 cPos =  cam.Camera.ScreenToWorldVector2D(sprite.Transform2D.position)
-                pygame.draw.circle(gameDisplay.display, sprite.color, (cPos.x, cPos.y), sprite.radius, sprite.width)
-
-
-    for cam in camera:
-        cam.Transform2D.position = (cam.Transform2D.position * gameDisplay.scale/2) / cam.Camera.scale
-        for sprite in object2D:
-            #Outline
-            if (hasattr(sprite, "Outline")):
-                if (type(sprite) == Sprite):
-                    newPos = cam.Camera.ScreenToWorldVector2D(
-                        Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,
-                                 sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
-
-                    newImage = pygame.transform.scale(sprite.image, sprite.Transform2D.scale.ToList())
-
-                    outline = pygame.mask.from_surface(newImage)
-                    outlineSurface = outline.to_surface()
-                    outlineSurface.set_colorkey([0,0,0])
-
-                    newSurface = pygame.Surface(outlineSurface.get_size()).convert_alpha()
-                    newSurface.fill([0,0,0,0])
-                    newSurface.blit(outlineSurface, (0,0))
-
-                    # colorImage = pygame.Surface(outlineSurface.get_size()).convert_alpha()
-                    # colorImage.fill(sprite.Outline.color)
-                    # newSurface.blit(colorImage, (0, 0), special_flags=BLEND_MULT)
-
-                    colorImage = pygame.Surface(newSurface.get_rect().size, pygame.SRCALPHA)
-                    colorImage.fill(sprite.Outline.color)
-                    newSurface.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
-                    newSurface.blit(outlineSurface, (0, 0), special_flags=BLEND_RGBA_MULT)
-
-                    gameDisplay.display.blit(newSurface, (newPos.x - sprite.Outline.width.x, newPos.y))
-                    gameDisplay.display.blit(newSurface, (newPos.x + sprite.Outline.width.x, newPos.y))
-                    gameDisplay.display.blit(newSurface, (newPos.x, newPos.y - sprite.Outline.width.y))
-                    gameDisplay.display.blit(newSurface, (newPos.x, newPos.y + sprite.Outline.width.y))
-                else:
-                    outline = copy.deepcopy(sprite)
-                    outline.color = sprite.Outline.color
-
-                    outline.Transform2D.position.x += sprite.Outline.width.x
-                    render2D(outline)
-                    outline.Transform2D.position.x -= 2 * sprite.Outline.width.x
-                    render2D(outline)
-                    outline.Transform2D.position.x += sprite.Outline.width.x
-                    outline.Transform2D.position.y += sprite.Outline.width.y
-                    render2D(outline)
-                    outline.Transform2D.position.y -= 2 * sprite.Outline.width.y
-                    render2D(outline)
+                pygame.draw.circle(gameDisplay.display, sprite.Circle.color, (cPos.x, cPos.y), sprite.Circle.radius, sprite.Circle.width)
 
 
 
-            # Sprite
-            render2D(sprite)
+    def render3D(sprite):
+        # n = len(Sprites3D)
+        # for i in range(n-1):
+        #     for j in range(0, n-i-1):
+        #
+        #         if Sprites3D[j].layer > Sprites3D[j+1].layer :
+        #             Sprites3D[j], Sprites3D[j+1] = Sprites3D[j+1], Sprites3D[j]
 
-
-
-
-
-
-
-def renderer3D():
-    # n = len(Sprites3D)
-    # for i in range(n-1):
-    #     for j in range(0, n-i-1):
-    #
-    #         if Sprites3D[j].layer > Sprites3D[j+1].layer :
-    #             Sprites3D[j], Sprites3D[j+1] = Sprites3D[j+1], Sprites3D[j]
-    trianglesToRaster = []
-
-    for sprite in Sprites3D:
 
         # Projection Matrix
         mProj = MatrixMakeProjection(90, gameDisplay.height / gameDisplay.width, 0, 1000)
@@ -370,52 +339,129 @@ def renderer3D():
 
                     trianglesToRaster.append(copy.deepcopy(triProjected))
 
-    trianglesToRaster.sort(key=lambda tri: (tri.p[0][2] + tri.p[1][2] + tri.p[2][2]) / 3.0, reverse=True)
 
-    # Clipping on boarders of the screen
-    for tri in trianglesToRaster:
-        # # Draws the Triangles
-        # pygame.draw.polygon(gameDisplay.display,tri.color, [[tri.p[0][0],tri.p[0][1]],[tri.p[1][0],tri.p[1][1]],[tri.p[2][0],tri.p[2][1]]])
-        # #pygame.gfxdraw.polygon(gameDisplay.display, [[tri.p[0][0],tri.p[0][1]],[tri.p[1][0],tri.p[1][1]],[tri.p[2][0],tri.p[2][1]]],tri.color)
-        #
-        # #Draws the border of the Triangles
-        # pygame.draw.polygon(gameDisplay.display, (0,0,0), [[tri.p[0][0], tri.p[0][1]],[tri.p[1][0], tri.p[1][1]],[tri.p[2][0], tri.p[2][1]]],7)
-        # #pygame.gfxdraw.aapolygon(gameDisplay.display, [[tri.p[0][0], tri.p[0][1]],[tri.p[1][0], tri.p[1][1]],[tri.p[2][0], tri.p[2][1]]], (0,0,0))
+    # Bubble Sort Sprite Layers
+    n = len(objects)
+    for i in range(n - 1):
 
-        listTriangles = []
-        listTriangles.append(tri)
-        newTriangles = 1
+        for j in range(0, n - i - 1):
 
-        for p in range(4):
-            while (newTriangles > 0):
-                test = listTriangles[-1]
-                listTriangles.pop()
-                newTriangles -= 1
+            if objects[j].layer > objects[j + 1].layer:
+                objects[j], objects[j + 1] = objects[j + 1], objects[j]
 
-                if (p == 0):
-                    clipped = TriangleClipAgainstPlane([0, 0, 0], [0, 1, 0], test)
-                elif (p == 1):
-                    clipped = TriangleClipAgainstPlane([0, gameDisplay.display.get_height() - 1, 0], [0, -1, 0], test)
-                elif (p == 2):
-                    clipped = TriangleClipAgainstPlane([0, 0, 0], [1, 0, 0], test)
-                elif (p == 3):
-                    clipped = TriangleClipAgainstPlane([gameDisplay.display.get_width() - 1, 0, 0], [-1, 0, 0], test)
 
-                for w in range(len(clipped)):
-                    listTriangles.append(clipped[w])
+    for cam in camera:
+        cam.Transform2D.position = (cam.Transform2D.position * gameDisplay.scale/2) / cam.Camera.scale
+        for sprite in objects:
+            if (sprite in objects2D):
 
-            newTriangles = len(listTriangles)
+                #Outline
+                if (hasattr(sprite, "Outline")):
+                    if (hasattr(sprite, "Sprite")):
+                        newPos = cam.Camera.ScreenToWorldVector2D(
+                            Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,
+                                     sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
 
-        for newTri in listTriangles:
-            # Draws the Triangles
-            pygame.draw.polygon(gameDisplay.display, newTri.color,
-                                [[newTri.p[0][0], newTri.p[0][1]], [newTri.p[1][0], newTri.p[1][1]],
-                                 [newTri.p[2][0], newTri.p[2][1]]])
-            # pygame.gfxdraw.polygon(gameDisplay.display, [[newTri.p[0][0],newTri.p[0][1]],[newTri.p[1][0],newTri.p[1][1]],[newTri.p[2][0],newTri.p[2][1]]],newTri.color)
+                        newImage = pygame.transform.scale(sprite.sprite.image, sprite.Transform2D.scale.ToList())
 
-            # Draws the border of the Triangles
-            # pygame.draw.polygon(gameDisplay.display, (0,0,0), [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]],7)
-            # pygame.gfxdraw.aapolygon(gameDisplay.display, [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]], (0,0,0))
+                        outline = pygame.mask.from_surface(newImage)
+                        outlineSurface = outline.to_surface()
+                        outlineSurface.set_colorkey([0,0,0])
+
+                        newSurface = pygame.Surface(outlineSurface.get_size()).convert_alpha()
+                        newSurface.fill([0,0,0,0])
+                        newSurface.blit(outlineSurface, (0,0))
+
+                        # colorImage = pygame.Surface(outlineSurface.get_size()).convert_alpha()
+                        # colorImage.fill(sprite.Outline.color)
+                        # newSurface.blit(colorImage, (0, 0), special_flags=BLEND_MULT)
+
+                        colorImage = pygame.Surface(newSurface.get_rect().size, pygame.SRCALPHA)
+                        colorImage.fill(sprite.Outline.color)
+                        newSurface.blit(colorImage, (0, 0), special_flags=BLEND_RGBA_MULT)
+                        newSurface.blit(outlineSurface, (0, 0), special_flags=BLEND_RGBA_MULT)
+
+                        gameDisplay.display.blit(newSurface, (newPos.x - sprite.Outline.width.x, newPos.y))
+                        gameDisplay.display.blit(newSurface, (newPos.x + sprite.Outline.width.x, newPos.y))
+                        gameDisplay.display.blit(newSurface, (newPos.x, newPos.y - sprite.Outline.width.y))
+                        gameDisplay.display.blit(newSurface, (newPos.x, newPos.y + sprite.Outline.width.y))
+                    else:
+                        outline = copy.deepcopy(sprite)
+                        outline.color = sprite.Outline.color
+
+                        outline.Transform2D.position.x += sprite.Outline.width.x
+                        render2D(outline)
+                        outline.Transform2D.position.x -= 2 * sprite.Outline.width.x
+                        render2D(outline)
+                        outline.Transform2D.position.x += sprite.Outline.width.x
+                        outline.Transform2D.position.y += sprite.Outline.width.y
+                        render2D(outline)
+                        outline.Transform2D.position.y -= 2 * sprite.Outline.width.y
+                        render2D(outline)
+
+
+
+                # Sprite
+                render2D(sprite)
+
+            elif (sprite in objects3D):
+
+
+
+                render3D(sprite)
+
+                trianglesToRaster.sort(key=lambda tri: (tri.p[0][2] + tri.p[1][2] + tri.p[2][2]) / 3.0, reverse=True)
+
+                # Clipping on boarders of the screen
+                for tri in trianglesToRaster:
+                    # # Draws the Triangles
+                    # pygame.draw.polygon(gameDisplay.display,tri.color, [[tri.p[0][0],tri.p[0][1]],[tri.p[1][0],tri.p[1][1]],[tri.p[2][0],tri.p[2][1]]])
+                    # #pygame.gfxdraw.polygon(gameDisplay.display, [[tri.p[0][0],tri.p[0][1]],[tri.p[1][0],tri.p[1][1]],[tri.p[2][0],tri.p[2][1]]],tri.color)
+                    #
+                    # #Draws the border of the Triangles
+                    # pygame.draw.polygon(gameDisplay.display, (0,0,0), [[tri.p[0][0], tri.p[0][1]],[tri.p[1][0], tri.p[1][1]],[tri.p[2][0], tri.p[2][1]]],7)
+                    # #pygame.gfxdraw.aapolygon(gameDisplay.display, [[tri.p[0][0], tri.p[0][1]],[tri.p[1][0], tri.p[1][1]],[tri.p[2][0], tri.p[2][1]]], (0,0,0))
+
+                    listTriangles = []
+                    listTriangles.append(tri)
+                    newTriangles = 1
+
+                    for p in range(4):
+                        while (newTriangles > 0):
+                            test = listTriangles[-1]
+                            listTriangles.pop()
+                            newTriangles -= 1
+
+                            if (p == 0):
+                                clipped = TriangleClipAgainstPlane([0, 0, 0], [0, 1, 0], test)
+                            elif (p == 1):
+                                clipped = TriangleClipAgainstPlane([0, gameDisplay.display.get_height() - 1, 0], [0, -1, 0],
+                                                                   test)
+                            elif (p == 2):
+                                clipped = TriangleClipAgainstPlane([0, 0, 0], [1, 0, 0], test)
+                            elif (p == 3):
+                                clipped = TriangleClipAgainstPlane([gameDisplay.display.get_width() - 1, 0, 0], [-1, 0, 0],
+                                                                   test)
+
+                            for w in range(len(clipped)):
+                                listTriangles.append(clipped[w])
+
+                        newTriangles = len(listTriangles)
+
+                    for newTri in listTriangles:
+                        # Draws the Triangles
+                        pygame.draw.polygon(gameDisplay.display, newTri.color,
+                                            [[newTri.p[0][0], newTri.p[0][1]], [newTri.p[1][0], newTri.p[1][1]],
+                                             [newTri.p[2][0], newTri.p[2][1]]])
+                        # pygame.gfxdraw.polygon(gameDisplay.display, [[newTri.p[0][0],newTri.p[0][1]],[newTri.p[1][0],newTri.p[1][1]],[newTri.p[2][0],newTri.p[2][1]]],newTri.color)
+
+                        # Draws the border of the Triangles
+                        # pygame.draw.polygon(gameDisplay.display, (0,0,0), [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]],7)
+                        # pygame.gfxdraw.aapolygon(gameDisplay.display, [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]], (0,0,0))
+
+
+
+
 
 
 
@@ -455,8 +501,15 @@ def checkScreenResize():
 
 
 def Main():
+    global objects
+
     while not crashed.get("crashed"):
         Variables.deltaTime = 1/clock.get_fps()
+        objects = []
+        for d2 in objects2D:
+            objects.append(d2)
+        for d3 in objects3D:
+            objects.append(d3)
         checkClose()
         checkScreenResize()
         gameDisplay.display.fill(gameDisplay.bgColor)
@@ -464,8 +517,7 @@ def Main():
         input()
         for update in updateFunctions:
             update()
-        renderer2D()
-        renderer3D()
+        renderer()
         pygame.display.flip()
         clock.tick( fps)
 
@@ -482,6 +534,7 @@ def Main():
 pygame.init()
 gameDisplay = Window()
 updateFunctions = []
+objects = []
 
 gameDisplay.scale = copy.copy(gameDisplay.originalScale)
 

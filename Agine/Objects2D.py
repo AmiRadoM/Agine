@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import pygame
+from .Attributes import *
 import os
 
 assetsPath = "./assets/"
@@ -88,59 +89,18 @@ class Vector2D():
 
 
 
-class Object2D():
-    def __init__(self):
-        import Agine.Attributes as Attributes
-        self.name = "Object"
-        self.layer = 0
-        self.isVisible = True
-        self.Transform2D = Attributes.Transform2D()
-        object2D.append(self)
-
-    def addAttr(self, attr):
-        import Agine.Attributes as Attributes
-        """
-        :param attr: The name of the attribute
-        """
-        try:
-            if(not Attributes.Attribute in eval("Attributes." + attr).__bases__):
-                raise TypeError("Missing an Agine2D Attribute Name!")
-            exec(f"self.{attr} = Attributes.{attr}()")
-            eval(f"self.{attr}").owner = self
-            eval("Attributes." + attr.lower()).append(self)
-        except:
-            raise TypeError("Missing an Agine2D Attribute Name!")
-
-    # def __del__(self):
-    #     object2D.remove(self)
-
-
-
-
-
-
-class Sprite(Object2D):
-    def __init__(self, image, color = (255,255,255,255)):
-        super().__init__()
-
-        # self.image = pygame.transform.scale(pygame.image.load(os.path.join(assetsPath,image)) ,(self.Transform2D.scale.x,self.Transform2D.scale.y))
-        self.image = pygame.image.load(os.path.join(assetsPath,image))
+sprite = []
+class Sprite(Attribute):
+    def __init__(self, imagePath = None, color = (255,255,255,255)):
+        self.imagePath = imagePath
         self.color = color
-        colorImage = pygame.Surface(self.image.get_size()).convert_alpha()
-        colorImage.fill(color)
-        self.image.blit(colorImage, (0,0), special_flags = 3)
 
 
 
-class ImageByPixels(Object2D):
-    def __init__(self):
-        super().__init__()
-        self.pixels = np.zeros((self.Transform2D.scale.x, self.Transform2D.scale.y), dtype=[('r', 'i4'), ('g', 'i4'),('b', 'i4')])
 
-
-class Line(Object2D):
+line = []
+class Line(Attribute):
     def __init__(self, startPoint = Vector2D(0,0), endPoint = Vector2D(0,0),color = [0,0,0], width = 1):
-        super().__init__()
         self.startPoint = startPoint
         self.endPoint = endPoint
         self.color = color
@@ -148,27 +108,22 @@ class Line(Object2D):
 
 
 
-
-class Square(Object2D):
-    def __init__(self, width = 0, color = (0,0,0), isVisible = True):
-        super().__init__()
+square = []
+class Square(Attribute):
+    def __init__(self, width = 0, color = (0,0,0)):
         self.width = width
         self.color = color
-        self.isVisible = isVisible
 
-
-class Polygon(Object2D):
+polygon = []
+class Polygon(Attribute):
     def __init__(self,points = [Vector2D(0,0),Vector2D(10,0),Vector2D(10,10)],color = (0,0,0), width = 0):
-        super().__init__()
         self.points = points
-        # self.translatedPoints = points
-        # self.tempPoints = self.points
         self.color = color
         self.width = width
 
 
-
-class Circle(Object2D):
+circle = []
+class Circle(Attribute):
     def __init__(self, radius = 100, color = (0,0,0),width = 0 ):
         super().__init__()
         self.radius = radius
@@ -182,4 +137,4 @@ class Circle(Object2D):
 
 
 
-object2D = []
+objects2D = []
