@@ -1,8 +1,10 @@
+from Variables import *
 from Agine_main import *
 import threading
 
+
 def update():
-    while not crashed:
+    while not crashed.get("crashed"):
         pass
 
 
@@ -16,5 +18,4 @@ start()
 #threading
 updateThread = threading.Thread(target=update,args=())
 updateThread.start()
-
-checkClose()
+Main()

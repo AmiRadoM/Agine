@@ -52,26 +52,7 @@ def translatePoints(sprite):
     return translatedPoints
 
 
-class Draw():
-    @staticmethod
-    def Square(position, scale, color, width):
-        x = x = position.x - scale.x / 2 + gameDisplay.display.get_width() / 2 - cameraPos[0]
-        y = -(position.y + scale.y / 2 - gameDisplay.display.get_height() / 2 - cameraPos[1])
-        pygame.draw.rect(gameDisplay.display, color, (x, y, scale.x, scale.y), width)
 
-    @staticmethod
-    def Line(startPoint, endPoint, color, width):
-        startX = startPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-        startY = -(startPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
-        endX = endPoint.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-        endY = -(endPoint.y - gameDisplay.display.get_height() / 2 - cameraPos[1])
-        pygame.draw.line(gameDisplay.display, color, [startX, startY], [endX, endY], width)
-
-    @staticmethod
-    def Circle(position, radius, color, width):
-        cX = position.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-        cY = -(position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
-        pygame.draw.circle(gameDisplay.display, color, (cX, cY), radius, width)
 
 # def renderer2D():
 #     # mousePos = pygame.mouse.get_pos()
@@ -136,14 +117,11 @@ class Draw():
 def renderer2D():
 
     # Bubble Sort Sprite Layers
-    # n = len(Sprites)
     n = len(object2D)
     for i in range(n - 1):
 
         for j in range(0, n - i - 1):
 
-            # if Sprites[j].layer > Sprites[j+1].layer :
-            #     Sprites[j], Sprites[j+1] = Sprites[j+1], Sprites[j]
             if object2D[j].layer > object2D[j + 1].layer:
                 object2D[j], object2D[j + 1] = object2D[j + 1], object2D[j]
 
@@ -154,9 +132,8 @@ def renderer2D():
         if (sprite.isVisible):
 
             if type(sprite) != Circle and type(sprite) != Polygon and type(sprite) != Line:
-                newPos = cam.Camera.ScreenToWorldVector2D(
-                    Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,
-                             sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
+                newScale = (sprite.Transform2D.scale * gameDisplay.scale/2) / cam.Camera.scale
+                newPos = cam.Camera.ScreenToWorldVector2D(Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
 
             if (type(sprite) == Line):
                 startVector = cam.Camera.ScreenToWorldVector2D(sprite.startPoint)
@@ -166,7 +143,7 @@ def renderer2D():
 
             if (type(sprite) == Square):
                 pygame.draw.rect(gameDisplay.display, sprite.color,
-                                 (newPos.x, newPos.y, sprite.Transform2D.scale.x, sprite.Transform2D.scale.y),
+                                 (newPos.x, newPos.y, newScale.x, newScale.y),
                                  sprite.width)
 
             if type(sprite) == ImageByPixels:
@@ -176,7 +153,7 @@ def renderer2D():
                                              sprite.pixels[j][i])
 
             if type(sprite) == Sprite:
-                newImage = pygame.transform.scale(sprite.image, sprite.Transform2D.scale.ToList())
+                newImage = pygame.transform.scale(sprite.image, [int(a) for a in newScale.ToList()])
                 newImage = newImage.convert_alpha()
 
                 colorImage = pygame.Surface(newImage.get_rect().size, pygame.SRCALPHA)
@@ -192,12 +169,12 @@ def renderer2D():
                 pygame.draw.polygon(gameDisplay.display, sprite.color, sprite.translatedPoints, sprite.width)
 
             if type(sprite) == Circle:
-                cX = sprite.position.x + gameDisplay.display.get_width() / 2 - cameraPos[0]
-                cY = -(sprite.position.y - gameDisplay.display.get_height() / 2 - cameraPos[0])
-                pygame.draw.circle(gameDisplay.display, sprite.color, (cX, cY), sprite.radius, sprite.width)
+                cPos =  cam.Camera.ScreenToWorldVector2D(sprite.Transform2D.position)
+                pygame.draw.circle(gameDisplay.display, sprite.color, (cPos.x, cPos.y), sprite.radius, sprite.width)
 
 
     for cam in camera:
+        cam.Transform2D.position = (cam.Transform2D.position * gameDisplay.scale/2) / cam.Camera.scale
         for sprite in object2D:
             #Outline
             if (hasattr(sprite, "Outline")):
@@ -242,6 +219,8 @@ def renderer2D():
                     render2D(outline)
                     outline.Transform2D.position.y -= 2 * sprite.Outline.width.y
                     render2D(outline)
+
+
 
             # Sprite
             render2D(sprite)
@@ -480,11 +459,11 @@ def Main():
         Variables.deltaTime = 1/clock.get_fps()
         checkClose()
         checkScreenResize()
-        for update in updateFunctions:
-            update()
         gameDisplay.display.fill(gameDisplay.bgColor)
         physics2D()
         input()
+        for update in updateFunctions:
+            update()
         renderer2D()
         renderer3D()
         pygame.display.flip()

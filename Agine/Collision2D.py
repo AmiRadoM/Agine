@@ -94,6 +94,7 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
 def collision2D(i):
     from .Attributes import boxcollider
+    from .Agine_main import gameDisplay
 
     for b in boxcollider:
 

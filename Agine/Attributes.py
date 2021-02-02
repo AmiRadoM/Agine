@@ -9,7 +9,7 @@ transform = []
 class Transform2D(Attribute):
     def __init__(self):
         self.position = Vector2D.Zero()
-        self.scale = Vector2D.Zero()
+        self.scale = Vector2D(1,1)
         self.rotation = 0
 
 
@@ -46,13 +46,53 @@ class BoxCollider(Attribute):
 
 
 camera = []
+
+
+
+
 class Camera(Attribute):
+
+    def __init__(self):
+        self.Draw = self.__Draw(self)
+        self.scale = 5
+
+
+    class __Draw():
+        def __init__(self, cam):
+            self.cam = cam
+
+        def Square(self, position, scale, color, width):
+            from .Agine_main import gameDisplay
+            import pygame
+            newPos = self.cam.ScreenToWorldVector2D(
+                Vector2D(position.x - scale.x / 2,
+                         position.y + scale.y / 2))
+            pygame.draw.rect(gameDisplay.display, color,
+                             (newPos.x, newPos.y, scale.x, scale.y),
+                             width)
+
+        def Line(self, startPoint, endPoint, color, width):
+            from .Agine_main import gameDisplay
+            import pygame
+            startVector = self.cam.ScreenToWorldVector2D(startPoint)
+            endVector = self.cam.ScreenToWorldVector2D(endPoint)
+            pygame.draw.line(gameDisplay.display, color, [startVector.x, startVector.y],
+                             [endVector.x, endVector.y], width)
+
+
+        def Circle(self, position, radius, color, width):
+            from .Agine_main import gameDisplay
+            import pygame
+            cPos = self.cam.ScreenToWorldVector2D(position)
+            pygame.draw.circle(gameDisplay.display, color, (cPos.x, cPos.y), radius, width)
+
+
 
     def ScreenToWorldVector2D(self, vector2D):
         from .Agine_main import gameDisplay
         newV = vector2D
-        newV.x = newV.x + gameDisplay.scale.x / 2 - self.owner.Transform2D.position.x
-        newV.y = -newV.y + gameDisplay.scale.y / 2 + self.owner.Transform2D.position.y
+        newV.x = (newV.x * gameDisplay.scale.x/2) / self.scale + gameDisplay.scale.x / 2 - self.owner.Transform2D.position.x
+        newV.y = -(newV.y * gameDisplay.scale.y/2) / self.scale + gameDisplay.scale.y / 2 + self.owner.Transform2D.position.y
         return newV
 
     def WorldToScreenVector2D(self, vector2D):
