@@ -49,9 +49,5 @@ def physics2D():
 
 
         # Velocity
+        print(Variables.deltaTime)
         object.Transform2D.position += rb.velocity * Variables.deltaTime
-
-    clock.tick(fps)
-
-# physicsThread = threading.Thread(target=__Physics2D,args=())
-# physicsThread.start()

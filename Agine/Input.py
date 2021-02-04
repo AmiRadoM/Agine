@@ -296,6 +296,28 @@ def input():
     else:
         KeyUp["ralt"] = False
 
+    #Arrows
+    KeyPressed["up"] = keyPressed[pygame.K_UP]
+    if KeyPressed["up"]:
+        KeyDown["up"] = False
+    else:
+        KeyUp["up"] = False
+    KeyPressed["down"] = keyPressed[pygame.K_DOWN]
+    if KeyPressed["down"]:
+        KeyDown["down"] = False
+    else:
+        KeyUp["down"] = False
+    KeyPressed["left"] = keyPressed[pygame.K_LEFT]
+    if KeyPressed["left"]:
+        KeyDown["left"] = False
+    else:
+        KeyUp["left"] = False
+    KeyPressed["right"] = keyPressed[pygame.K_RIGHT]
+    if KeyPressed["right"]:
+        KeyDown["right"] = False
+    else:
+        KeyUp["right"] = False
+
     #Down
     event = pygame.event.get(pygame.KEYDOWN)
     for e in event:
@@ -372,10 +394,10 @@ def input():
 
     #MOUSE
 
-    from .Agine_main import gameDisplay, cameraPos
+    from .Agine_main import gameDisplay
     #Mouse Position
-    mousePos.x = pygame.mouse.get_pos()[0] - gameDisplay.display.get_width() / 2 + cameraPos[0]
-    mousePos.y = -pygame.mouse.get_pos()[1]  + gameDisplay.display.get_width() / 2 + cameraPos[0]
+    mousePos.x = pygame.mouse.get_pos()[0] - gameDisplay.display.get_width() / 2
+    mousePos.y = -pygame.mouse.get_pos()[1]  + gameDisplay.display.get_width() / 2
 
 
 

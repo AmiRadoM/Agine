@@ -16,6 +16,7 @@ def AABB(object1, object2):
     return False
 
 def DynamicAABB(object1, object2):
+    from .Agine_main import gameDisplay
     col1 = object1.BoxCollider
     col2 = object2.BoxCollider
 
@@ -138,9 +139,6 @@ def collision2D(i):
 
 
                     i.Rigidbody2D.velocity += abs(v1) * c[1]
-
-
-
 
             else:
                 if(AABB(i, j) and i.BoxCollider.isTrigger):

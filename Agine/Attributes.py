@@ -100,8 +100,8 @@ class Camera(Attribute):
     def WorldToScreenVector2D(self, vector2D):
         from .Agine_main import gameDisplay
         newV = vector2D
-        newV.x = newV.x - gameDisplay.scale.x / 2 + self.owner.Transform2D.position.x
-        newV.y = newV.y - gameDisplay.scale.y / 2 + self.owner.Transform2D.position.y
+        newV.x = newV.x + self.owner.Transform2D.position.x
+        newV.y = newV.y - self.owner.Transform2D.position.y
         return newV
 
     def ProportionedScale(self, scale):

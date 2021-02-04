@@ -12,9 +12,10 @@ def update():
         s1.Rigidbody2D.velocity = Vector2D(0 , s1.Rigidbody2D.velocity.y)
 
     if(KeyDown["space"]):
-        s1.Rigidbody2D.velocity = Vector2D(s1.Rigidbody2D.velocity.x, 20)
+        s1.Rigidbody2D.velocity = Vector2D(s1.Rigidbody2D.velocity.x, 15)
 
-    cam1.Transform2D.position = s1.Transform2D.position
+
+    # cam1.Transform2D.position = s1.Transform2D.position
     pass
 
 
@@ -30,10 +31,13 @@ cam1.addAttr("Camera")
 ground = GameObject()
 ground.addAttr("Square")
 
-s1 = GameObject()
+s1 = GameObject(name="Player")
 s1.addAttr("Sprite")
 s1.Sprite.imagePath = "character.png"
 
+t= GameObject()
+t.addAttr("Text")
+t.Transform2D.position = Vector2D(0, 100)
 
 s1.Transform2D.position = Vector2D(0, 1)
 
