@@ -16,6 +16,7 @@ def update():
 
 
     # cam1.Transform2D.position = s1.Transform2D.position
+
     pass
 
 
@@ -40,6 +41,16 @@ t.addAttr("Text")
 t.Transform2D.position = Vector2D(0, 100)
 
 s1.Transform2D.position = Vector2D(0, 1)
+
+
+def f():
+    print("Clicked!!")
+
+b = GameObject()
+b.addAttr("Button")
+b.Button.onClick.append(f)
+b.addAttr("Square")
+b.Transform2D.position = Vector2D(1.5,0)
 
 
 ground.addAttr("BoxCollider")

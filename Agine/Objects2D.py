@@ -1,8 +1,6 @@
 import math
-import numpy as np
 import pygame
 from .Attributes import *
-import os
 
 assetsPath = "./assets/"
 
@@ -132,9 +130,3 @@ class Circle(Attribute):
 
 
 
-
-
-
-
-
-objects2D = []

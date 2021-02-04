@@ -49,5 +49,4 @@ def physics2D():
 
 
         # Velocity
-        print(Variables.deltaTime)
         object.Transform2D.position += rb.velocity * Variables.deltaTime

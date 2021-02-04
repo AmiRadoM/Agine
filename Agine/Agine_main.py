@@ -257,10 +257,10 @@ def renderer():
             font = pygame.font.SysFont(None, 32)
             text = font.render(object.Text.text, True,object.Text.color)
 
-            # newPosUI = Vector2D(object.Transform2D.position.x - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform2D.position.y + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
-            # newPosUI.y = -newPosUI.y
+            newPosUI = Vector2D(object.Transform2D.position.x - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform2D.position.y + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
+            newPosUI.y = -newPosUI.y
 
-            # gameDisplay.display.blit(text, newPosUI.ToList())
+            gameDisplay.display.blit(text, newPosUI.ToList())
 
 
 
@@ -446,6 +446,7 @@ def Main():
         for update in updateFunctions:
             update()
         renderer()
+        eventsUI()
         pygame.display.flip()
         clock.tick(Variables.fps)
 
