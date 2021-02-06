@@ -20,7 +20,7 @@ from .ObjectsUI import *
 
 
 
-class Window():
+class __Window():
     def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector2D(1000,1000)):
         self.scale = scale
         self.originalScale = scale
@@ -28,8 +28,15 @@ class Window():
         self.display = pygame.display.set_mode((self.originalScale.x,self.originalScale.y),DOUBLEBUF|HWSURFACE|RESIZABLE)
         pygame.display.set_caption(title)
 
-    def ProportionedScale(self, scale):
-        return self.scale * (scale / self.originalScale)
+    def SetScale(self, scale):
+        self.scale = scale
+        self.display = pygame.display.set_mode((self.scale.x, self.scale.y),DOUBLEBUF | HWSURFACE | RESIZABLE)
+
+    def SetSettings(self, resizable = None):
+        if (resizable == True):
+            self.display = pygame.display.set_mode((self.scale.x, self.scale.y), DOUBLEBUF | HWSURFACE | RESIZABLE)
+        elif (resizable == False):
+            self.display = pygame.display.set_mode((self.scale.x, self.scale.y), DOUBLEBUF | HWSURFACE)
 
 
 
@@ -54,8 +61,6 @@ class GameObject():
         except:
             raise TypeError("Missing an Agine2D Attribute Name!")
 
-    def __del__(self):
-        objects.remove(self)
 
 
 
@@ -70,11 +75,11 @@ def renderer():
 
         if type(sprite) != Circle and type(sprite) != Polygon and type(sprite) != Line:
             newScale = (sprite.Transform2D.scale * gameDisplay.scale/2) / cam.Camera.scale
-            newPos = cam.Camera.ScreenToWorldVector2D(Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
+            newPos = cam.Camera.TranslateWorldVector2D(Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
 
         if (hasattr(sprite, "Line")):
-            startVector = cam.Camera.ScreenToWorldVector2D(sprite.Line.startPoint)
-            endVector = cam.Camera.ScreenToWorldVector2D(sprite.Line.endPoint)
+            startVector = cam.Camera.TranslateWorldVector2D(sprite.Line.startPoint)
+            endVector = cam.Camera.TranslateWorldVector2D(sprite.Line.endPoint)
             pygame.draw.line(gameDisplay.display, sprite.Line.color, [startVector.x, startVector.y],
                              [endVector.x, endVector.y], sprite.Line.width)
 
@@ -115,7 +120,7 @@ def renderer():
             pygame.draw.polygon(gameDisplay.display, sprite.Polygon.color, translatedPoints, sprite.Polygon.width)
 
         if hasattr(sprite, "Circle"):
-            cPos =  cam.Camera.ScreenToWorldVector2D(sprite.Transform2D.position)
+            cPos =  cam.Camera.TranslateWorldVector2D(sprite.Transform2D.position)
             pygame.draw.circle(gameDisplay.display, sprite.Circle.color, (cPos.x, cPos.y), sprite.Circle.radius, sprite.Circle.width)
 
 
@@ -254,11 +259,12 @@ def renderer():
     def renderUI(object):
         pass
         if (hasattr(object, "Text")):
-            font = pygame.font.SysFont(None, 32)
+            font = pygame.font.SysFont(None, object.Text.fontSize)
             text = font.render(object.Text.text, True,object.Text.color)
 
-            newPosUI = Vector2D(object.Transform2D.position.x - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform2D.position.y + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
+            newPosUI = Vector2D(object.Transform2D.position.x * (gameDisplay.scale.x/2 / cam.Camera.scale) - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform2D.position.y * (gameDisplay.scale.y/2 / cam.Camera.scale) + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
             newPosUI.y = -newPosUI.y
+
 
             gameDisplay.display.blit(text, newPosUI.ToList())
 
@@ -285,7 +291,7 @@ def renderer():
                 #Outline
                 if (hasattr(object, "Outline")):
                     if (hasattr(object, "Sprite")):
-                        newPos = cam.Camera.ScreenToWorldVector2D(
+                        newPos = cam.Camera.TranslateWorldVector2D(
                             Vector2D(object.Transform2D.position.x - object.Transform2D.scale.x / 2,
                                      object.Transform2D.position.y + object.Transform2D.scale.y / 2))
 
@@ -432,7 +438,17 @@ def checkScreenResize():
 
 
 def Main():
-    global lastTime
+    global gameDisplay
+
+    # Setup
+    try:
+        gameDisplay
+    except NameError:
+        gameDisplay = __Window()
+
+    pygame.init()
+
+    lastTime = time.time()
 
     while not crashed.get("crashed"):
         nowTime = time.time()
@@ -454,22 +470,14 @@ def Main():
     pygame.quit()
 
 
-
-
-
-
-
-#Setup
-pygame.init()
-gameDisplay = Window()
+gameDisplay = __Window()
 updateFunctions = []
 objects = []
 
 gameDisplay.scale = copy.copy(gameDisplay.originalScale)
 
-# while Variables.deltaTime == 0:
-#     for i in range(11):
-#         Variables.clock.tick(fps)
-#     Variables.deltaTime = 1/Variables.clock.get_fps()
 
-lastTime = time.time()
+
+
+
+

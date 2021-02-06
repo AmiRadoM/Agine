@@ -1,0 +1,1 @@
+python C:\Users\User\Python\Agine\AgineMenu.py %1
