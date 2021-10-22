@@ -9,9 +9,9 @@ import pygame.gfxdraw
 from .Variables import *
 import Agine.Variables as Variables
 from .Objects2D import *
+from .Objects3D import *
 from .Physics2D import *
 from .Collision2D import *
-from .Objects3D import *
 from .Input import *
 from .Attributes import *
 from .ObjectsUI import *
@@ -19,9 +19,8 @@ from .ObjectsUI import *
 
 
 
-
 class __Window():
-    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector2D(1000,1000)):
+    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector3D(1000,1000,0)):
         self.scale = scale
         self.originalScale = scale
         self.bgColor = backgroundColor
@@ -45,7 +44,7 @@ class GameObject():
         self.name = name
         self.layer = layer
         self.isVisible = isVisible
-        self.Transform2D = Transform2D()
+        self.Transform = Transform()
         objects.append(self)
 
     def addAttr(self, attr):
@@ -68,14 +67,11 @@ class GameObject():
 
 
 def renderer():
-    trianglesToRaster = []
 
-    # 2D!!!!
     def render2D(sprite):
-
         if type(sprite) != Circle and type(sprite) != Polygon and type(sprite) != Line:
-            newScale = (sprite.Transform2D.scale * gameDisplay.scale/2) / cam.Camera.scale
-            newPos = cam.Camera.TranslateWorldVector2D(Vector2D(sprite.Transform2D.position.x - sprite.Transform2D.scale.x / 2,sprite.Transform2D.position.y + sprite.Transform2D.scale.y / 2))
+            newScale = (sprite.Transform.scale * gameDisplay.scale/2) / cam.Camera.scale
+            newPos = cam.Camera.TranslateWorldVector2D(Vector2D(sprite.Transform.position.x - sprite.Transform.scale.x / 2,sprite.Transform.position.y + sprite.Transform.scale.y / 2))
 
         if (hasattr(sprite, "Line")):
             startVector = cam.Camera.TranslateWorldVector2D(sprite.Line.startPoint)
@@ -89,10 +85,11 @@ def renderer():
                              sprite.Square.width)
 
 
+
         if hasattr(sprite, "Sprite"):
             if(sprite.Sprite.imagePath != None):
-                img = pygame.image.load(os.path.join(assetsPath,sprite.Sprite.imagePath))
-                newImage = pygame.transform.scale(img, [int(a) for a in newScale.ToList()])
+                img = pygame.image.load(sprite.Sprite.imagePath)
+                newImage = pygame.transform.scale(img, [int(a) for a in newScale.ToVector2D().ToList()])
                 newImage = newImage.convert_alpha()
 
                 colorImage = pygame.Surface(newImage.get_rect().size, pygame.SRCALPHA)
@@ -104,169 +101,334 @@ def renderer():
         if hasattr(sprite, "Polygon"):
             allX = [point.x for point in sprite.Polygon.points]
             allY = [point.y for point in sprite.Polygon.points]
-            allX = [x * sprite.Transform2D.scale.x for x in allX]
-            allY = [y * sprite.Transform2D.scale.y for y in allY]
+            allX = [x * sprite.Transform.scale.x for x in allX]
+            allY = [y * sprite.Transform.scale.y for y in allY]
             avarageX = sum(allX) / len(allX)
             avarageY = sum(allY) / len(allY)
 
             deltaX = (sprite.x - avarageX)
             deltaY = (sprite.y - avarageY)
 
-            translatedPoints = [Vector2D((allX[i] + deltaX) + gameDisplay.display.get_width() / 2 - cam.Transform2D.position.x, -(
-                        (allY[i] + deltaY) - gameDisplay.display.get_height() / 2 - cam.Transform2D.position.y)) for i in
+            translatedPoints = [Vector2D((allX[i] + deltaX) + gameDisplay.display.get_width() / 2 - cam.Transform.position.x, -(
+                        (allY[i] + deltaY) - gameDisplay.display.get_height() / 2 - cam.Transform.position.y)) for i in
                                 range(len(allX))]
 
 
             pygame.draw.polygon(gameDisplay.display, sprite.Polygon.color, translatedPoints, sprite.Polygon.width)
 
         if hasattr(sprite, "Circle"):
-            cPos =  cam.Camera.TranslateWorldVector2D(sprite.Transform2D.position)
+            cPos =  cam.Camera.TranslateWorldVector2D(sprite.Transform.position)
             pygame.draw.circle(gameDisplay.display, sprite.Circle.color, (cPos.x, cPos.y), sprite.Circle.radius, sprite.Circle.width)
 
+    def render3D(object):
+        if(hasattr(object, "Cube") or hasattr(object, "Mesh")):
+            aspectRatio = gameDisplay.scale.x / gameDisplay.scale.y
+            matrixProjection = Matrix4x4.MakeProjection(cam, aspectRatio)
+
+            #Rotation Matrices
+            matrixRotationZ = Matrix4x4.MakeRotationZ(object.Transform.rotation.z + math.radians(180))
+            matrixRotationX = Matrix4x4.MakeRotationX(object.Transform.rotation.x)
+            matrixRotationY = Matrix4x4.MakeRotationY(object.Transform.rotation.y)
+
+            #Translation Matrix and World Matrix
+            matrixTranslation = Matrix4x4.MakeTranslation(object.Transform.position.x,object.Transform.position.y,object.Transform.position.z)
+            matrixWorld = matrixRotationZ * matrixRotationX * matrixRotationY
+            matrixWorld = matrixWorld * matrixTranslation
+
+            #Camera Matrix
+            camTraget = Vector3D.Forward()
+            matrixCamRotationY = Matrix4x4.MakeRotationY(cam.Transform.rotation.y)
+            lookDirection = matrixCamRotationY * camTraget
+            camTraget = cam.Transform.position + lookDirection
+            matrixCam = Matrix4x4.MakePointAt(cam.Transform.position, camTraget, Vector3D.Up())
+            matrixView = Matrix4x4.MakeQuickInverse(matrixCam)
+
+            trianglesToRender = []
+
+            for tri in object.Mesh.triangles if hasattr(object, "Mesh") else object.Cube.triangles:
+                triTransformed = Triangle()
+                triViewed = Triangle()
+
+                triTransformed.points[0] = matrixWorld * tri.points[0]
+                triTransformed.points[1] = matrixWorld * tri.points[1]
+                triTransformed.points[2] = matrixWorld * tri.points[2]
+                triTransformed.textureCords[0] = tri.textureCords[0]
+                triTransformed.textureCords[1] = tri.textureCords[1]
+                triTransformed.textureCords[2] = tri.textureCords[2]
+
+                #Claculate The Normal
+                line1 = triTransformed.points[1] - triTransformed.points[0]
+                line2 = triTransformed.points[2] - triTransformed.points[0]
+                
+                normal = line1.CrossProduct(line2)
+                normal = normal.Normalize()
+
+                cameraRay = triTransformed.points[0] - Vector3D(cam.Transform.position.x,-cam.Transform.position.y,cam.Transform.position.z)
+
+                if(normal.DotProduct(cameraRay) < 0):
+
+                    #Illumination
+                    lightDirection = Vector3D(0,-0.4,-1)
+                    lightDirection = lightDirection.Normalize()
+
+                    dotProduct = max(0.1, lightDirection.DotProduct(normal))
+
+                    triTransformed.color = (max(min(255 * dotProduct,255),0), max(min(255 * dotProduct,255),0), max(min(255 * dotProduct,255),0))
+
+                    #World Space to View Space
+                    triViewed.points[0] = matrixView * triTransformed.points[0]
+                    triViewed.points[1] = matrixView * triTransformed.points[1]
+                    triViewed.points[2] = matrixView * triTransformed.points[2]
+                    triViewed.color = triTransformed.color
+                    triViewed.textureCords[0] = triTransformed.textureCords[0]
+                    triViewed.textureCords[1] = triTransformed.textureCords[1]
+                    triViewed.textureCords[2] = triTransformed.textureCords[2]
+
+                    clipped = [None, None]
+                    clipped[0],clipped[1] = triViewed.ClipAgainstPlane(Vector3D(0,0,0.1), Vector3D(0,0,1))
+                    for clippedTri in clipped:
+                        if(clippedTri != None):
+
+                            triProjected = Triangle()
+
+                            #Turn The Triangles Points To Be Projectable
+                            triProjected.points[0] = matrixProjection * clippedTri.points[0];
+                            triProjected.points[1] = matrixProjection * clippedTri.points[1];
+                            triProjected.points[2] = matrixProjection * clippedTri.points[2];
+                            triProjected.color = clippedTri.color
+                            triProjected.textureCords[0] = copy.deepcopy(clippedTri.textureCords[0])
+                            triProjected.textureCords[1] = copy.deepcopy(clippedTri.textureCords[1])
+                            triProjected.textureCords[2] = copy.deepcopy(clippedTri.textureCords[2])
+
+                            triProjected.textureCords[0].x = triProjected.textureCords[0].x / triProjected.points[0].w
+                            triProjected.textureCords[1].x = triProjected.textureCords[1].x / triProjected.points[1].w
+                            triProjected.textureCords[2].x = triProjected.textureCords[2].x / triProjected.points[2].w
+
+                            triProjected.textureCords[0].y = triProjected.textureCords[0].y / triProjected.points[0].w
+                            triProjected.textureCords[1].y = triProjected.textureCords[1].y / triProjected.points[1].w
+                            triProjected.textureCords[2].y = triProjected.textureCords[2].y / triProjected.points[2].w
+
+                            triProjected.textureCords[0].w = 1 / triProjected.points[0].w
+                            triProjected.textureCords[1].w = 1 / triProjected.points[1].w
+                            triProjected.textureCords[2].w = 1 / triProjected.points[2].w
+
+                            triProjected.points[0] = triProjected.points[0] / triProjected.points[0].w
+                            triProjected.points[1] = triProjected.points[1] / triProjected.points[1].w
+                            triProjected.points[2] = triProjected.points[2] / triProjected.points[2].w
 
 
-    # def render3D(sprite):
-    #
-    #     # Projection Matrix
-    #     mProj = MatrixMakeProjection(90, gameDisplay.height / gameDisplay.width, 0, 1000)
-    #     # Rotation Matrices
-    #     mZ = MatrixMakeRotationZ(sprite.rotationz)
-    #     mX = MatrixMakeRotationX(math.radians(sprite.rotationx + 180))
-    #     mY = MatrixMakeRotationY(sprite.rotationy)
-    #     # Translation Matrix
-    #     mTrans = MatrixMakeTranslation(0, 0, 0)
-    #     # World Matrix
-    #     mWorld = MatrixMakeIdentity()
-    #     mWorld = MatrixMultiplyMatrix(mZ, mX)
-    #     mWorld = MatrixMultiplyMatrix(mWorld, mTrans)
-    #     # Camera Matrix
-    #     Up = [0, 1, 0]
-    #     Target = Vector3DAdd(cameraPos, lookDir)
-    #     mCamera = MatrixPointAt(cameraPos, Target, Up)
-    #     mView = MatrixQuickInverseForLookAt(mCamera)
-    #
-    #     for triangle in sprite.mesh.Triangles:
-    #         triProjected = Triangle3D()
-    #         triTranslated = copy.deepcopy(triangle)
-    #
-    #         # Rotation
-    #         # Z
-    #
-    #         triTranslated.p[0][0] = triangle.p[0][0] * mZ.m[0][0] + triangle.p[0][1] * mZ.m[1][0]
-    #         triTranslated.p[1][0] = triangle.p[1][0] * mZ.m[0][0] + triangle.p[1][1] * mZ.m[1][0]
-    #         triTranslated.p[2][0] = triangle.p[2][0] * mZ.m[0][0] + triangle.p[2][1] * mZ.m[1][0]
-    #         triTranslated.p[0][1] = triangle.p[0][1] * mZ.m[1][1] + triangle.p[0][0] * mZ.m[0][1]
-    #         triTranslated.p[1][1] = triangle.p[1][1] * mZ.m[1][1] + triangle.p[1][0] * mZ.m[0][1]
-    #         triTranslated.p[2][1] = triangle.p[2][1] * mZ.m[1][1] + triangle.p[2][0] * mZ.m[0][1]
-    #
-    #         # X
-    #         tempTriangle = copy.deepcopy(triTranslated)
-    #
-    #         triTranslated.p[0][1] = tempTriangle.p[0][1] * mX.m[1][1] + tempTriangle.p[0][2] * mX.m[2][1]
-    #         triTranslated.p[1][1] = tempTriangle.p[1][1] * mX.m[1][1] + tempTriangle.p[1][2] * mX.m[2][1]
-    #         triTranslated.p[2][1] = tempTriangle.p[2][1] * mX.m[1][1] + tempTriangle.p[2][2] * mX.m[2][1]
-    #         triTranslated.p[0][2] = tempTriangle.p[0][2] * mX.m[2][2] + tempTriangle.p[0][1] * mX.m[1][2]
-    #         triTranslated.p[1][2] = tempTriangle.p[1][2] * mX.m[2][2] + tempTriangle.p[1][1] * mX.m[1][2]
-    #         triTranslated.p[2][2] = tempTriangle.p[2][2] * mX.m[2][2] + tempTriangle.p[2][1] * mX.m[1][2]
-    #
-    #         # Y
-    #         tempTriangle = copy.deepcopy(triTranslated)
-    #
-    #         triTranslated.p[0][0] = tempTriangle.p[0][0] * mY.m[0][0] + tempTriangle.p[0][2] * mY.m[0][2]
-    #         triTranslated.p[1][0] = tempTriangle.p[1][0] * mY.m[0][0] + tempTriangle.p[1][2] * mY.m[0][2]
-    #         triTranslated.p[2][0] = tempTriangle.p[2][0] * mY.m[0][0] + tempTriangle.p[2][2] * mY.m[0][2]
-    #         triTranslated.p[0][2] = tempTriangle.p[0][2] * mY.m[2][2] + tempTriangle.p[0][0] * mY.m[2][0]
-    #         triTranslated.p[1][2] = tempTriangle.p[1][2] * mY.m[2][2] + tempTriangle.p[1][0] * mY.m[2][0]
-    #         triTranslated.p[2][2] = tempTriangle.p[2][2] * mY.m[2][2] + tempTriangle.p[2][0] * mY.m[2][0]
-    #
-    #         # Scale
-    #         triTranslated.p[0][0] *= sprite.scalex
-    #         triTranslated.p[1][0] *= sprite.scalex
-    #         triTranslated.p[2][0] *= sprite.scalex
-    #         triTranslated.p[0][1] *= sprite.scaley
-    #         triTranslated.p[1][1] *= sprite.scaley
-    #         triTranslated.p[2][1] *= sprite.scaley
-    #         triTranslated.p[0][2] *= sprite.scalez
-    #         triTranslated.p[1][2] *= sprite.scalez
-    #         triTranslated.p[2][2] *= sprite.scalez
-    #
-    #         # Position
-    #         triTranslated.p[0][0] += sprite.x
-    #         triTranslated.p[1][0] += sprite.x
-    #         triTranslated.p[2][0] += sprite.x
-    #         triTranslated.p[0][1] += sprite.y
-    #         triTranslated.p[1][1] += sprite.y
-    #         triTranslated.p[2][1] += sprite.y
-    #         triTranslated.p[0][2] += sprite.z
-    #         triTranslated.p[1][2] += sprite.z
-    #         triTranslated.p[2][2] += sprite.z
-    #
-    #         # Getting Normal of Triangle
-    #         normal = [0, 0, 0]
-    #         line1 = [0, 0, 0]
-    #         line2 = [0, 0, 0]
-    #         line1 = Vector3DSub(triTranslated.p[1], triTranslated.p[0])
-    #         line2 = Vector3DSub(triTranslated.p[2], triTranslated.p[0])
-    #         normal = Vector3DCrossProduct(line1, line2)
-    #         normal = Vector3DNormalise(normal)
-    #
-    #         # If checks if player sees the triangle so the engine shold render it
-    #         cameraRay = Vector3DSub(triTranslated.p[0], cameraPos)
-    #         if (Vector3DDotProduct(normal, cameraRay) < 0):
-    #             # if(True):
-    #
-    #             # Illumination
-    #             lightDir = [0, -1, -1]
-    #             lightDir = Vector3DNormalise(lightDir)
-    #
-    #             dp = max(0.1, Vector3DDotProduct(lightDir, normal))
-    #             triProjected.color = Vector3DMultVector3D(triProjected.color, Vector3DDiv(GetColorShading(dp), 255))
-    #
-    #             # Convert World Space ---> View Space
-    #             tempTriangle = copy.deepcopy(triTranslated)
-    #             triTranslated.p[0] = MultiplyMatrixVector(tempTriangle.p[0], triTranslated.p[0], mView)
-    #             triTranslated.p[1] = MultiplyMatrixVector(tempTriangle.p[1], triTranslated.p[1], mView)
-    #             triTranslated.p[2] = MultiplyMatrixVector(tempTriangle.p[2], triTranslated.p[2], mView)
-    #
-    #             # Clip Viewed Triangle agains near
-    #             clipped = TriangleClipAgainstPlane([0, 0, 0.1], [0, 0, 1.0], triTranslated)
-    #
-    #             for n in range(len(clipped)):
-    #                 # Project Triangles from 3D ---> 2D
-    #
-    #                 triProjected.p[0] = MultiplyMatrixVector(clipped[n].p[0], triProjected.p[0], mProj)
-    #                 triProjected.p[1] = MultiplyMatrixVector(clipped[n].p[1], triProjected.p[1], mProj)
-    #                 triProjected.p[2] = MultiplyMatrixVector(clipped[n].p[2], triProjected.p[2], mProj)
-    #
-    #                 # Scale to View
-    #                 triProjected.p[0][0] += 1.0
-    #                 triProjected.p[0][1] += 1.0
-    #                 triProjected.p[1][0] += 1.0
-    #                 triProjected.p[1][1] += 1.0
-    #                 triProjected.p[2][0] += 1.0
-    #                 triProjected.p[2][1] += 1.0
-    #
-    #                 triProjected.p[0][0] *= 0.5 * gameDisplay.width
-    #                 triProjected.p[0][1] *= 0.5 * gameDisplay.height
-    #                 triProjected.p[1][0] *= 0.5 * gameDisplay.width
-    #                 triProjected.p[1][1] *= 0.5 * gameDisplay.height
-    #                 triProjected.p[2][0] *= 0.5 * gameDisplay.width
-    #                 triProjected.p[2][1] *= 0.5 * gameDisplay.height
-    #
-    #                 trianglesToRaster.append(copy.deepcopy(triProjected))
+                            #Scale into View
+                            offsetView = Vector3D(1,1)
+                            triProjected.points[0] += offsetView
+                            triProjected.points[1] += offsetView
+                            triProjected.points[2] += offsetView
 
+                            triProjected.points[0].x *= 0.5 * gameDisplay.scale.x
+                            triProjected.points[0].y *= 0.5 * gameDisplay.scale.y
+                            triProjected.points[1].x *= 0.5 * gameDisplay.scale.x
+                            triProjected.points[1].y *= 0.5 * gameDisplay.scale.y
+                            triProjected.points[2].x *= 0.5 * gameDisplay.scale.x
+                            triProjected.points[2].y *= 0.5 * gameDisplay.scale.y
+
+
+                            #Store Triangles To Sort Them
+                            trianglesToRender.append(triProjected)
+                    
+            #Sort Triangles To Render
+            trianglesToRender.sort(key=lambda t: (t.points[0].z + t.points[1].z + t.points[2].z)/3, reverse= True)
+
+            for triToRender in trianglesToRender:
+                listTriangles = []
+                listTriangles.append(triToRender)
+                numOfTris = 1
+
+                for p in range(4):
+                    while (numOfTris > 0):
+                        test = listTriangles[len(listTriangles)-1]
+                        listTriangles.pop(len(listTriangles)-1)
+                        numOfTris -= 1
+
+
+                        trisToAdd = [None,None]
+                        if (p == 0):
+                            trisToAdd[0], trisToAdd[1] = test.ClipAgainstPlane(Vector3D(0,0,0), Vector3D(0,1,0))
+                        elif (p == 1):
+                            trisToAdd[0], trisToAdd[1] = test.ClipAgainstPlane(Vector3D(0,gameDisplay.scale.y-1,0), Vector3D(0,-1,0))
+                        elif (p == 2):
+                            trisToAdd[0], trisToAdd[1] = test.ClipAgainstPlane(Vector3D(0,0,0), Vector3D(1,0,0))
+                        elif (p == 3):
+                            trisToAdd[0], trisToAdd[1] = test.ClipAgainstPlane(Vector3D(gameDisplay.scale.x-1,0,0), Vector3D(-1,0,0))
+
+                        for t in trisToAdd:
+                            if (t != None):
+                                listTriangles.append(copy.deepcopy(t))
+
+                    numOfTris = len(listTriangles)
+
+                for newTri in listTriangles:
+                    # Textured Rendering
+                    TriangleTextured(newTri, object.Cube.texture if (hasattr(object,"Cube")) else object.Mesh.texture)
+                    # Normal Rendering
+                    # pygame.draw.polygon(gameDisplay.display, newTri.color, ((newTri.points[0].x, newTri.points[0].y),(newTri.points[1].x, newTri.points[1].y),(newTri.points[2].x, newTri.points[2].y)), 0)
+                    # Wire Frame Rendering
+                    pygame.draw.polygon(gameDisplay.display, (0,0,0), ((newTri.points[0].x, newTri.points[0].y), (newTri.points[1].x, newTri.points[1].y), (newTri.points[2].x, newTri.points[2].y)), 1)
+
+    def TriangleTextured(tri, img):
+        pixelArray = pygame.PixelArray(gameDisplay.display)
+        x1 = int(tri.points[0].x)
+        y1 = int(tri.points[0].y)
+        u1 = tri.textureCords[0].x
+        v1 = tri.textureCords[0].y
+        w1 = tri.textureCords[0].w
+
+        x2 = int(tri.points[1].x)
+        y2 = int(tri.points[1].y)
+        u2 = tri.textureCords[1].x
+        v2 = tri.textureCords[1].y
+        w2 = tri.textureCords[1].w
+
+        x3 = int(tri.points[2].x)
+        y3 = int(tri.points[2].y)
+        u3 = tri.textureCords[2].x
+        v3 = tri.textureCords[2].y
+        w3 = tri.textureCords[2].w
+
+        if (y2 < y1):
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+            u1, u2 = u2, u1
+            v1, v2 = v2, v1
+            w1, w2 = w2, w1
+
+        if (y3 < y1):
+            x1, x3 = x3, x1
+            y1, y3 = y3, y1
+            u1, u3 = u3, u1
+            v1, v3 = v3, v1
+            w1, w3 = w3, w1
+
+        if (y3 < y2):
+            x3, x2 = x2, x3
+            y3, y2 = y2, y3
+            u3, u2 = u2, u3
+            v3, v2 = v2, v3
+            w3, w2 = w2, w3
+
+        dya = y2 - y1
+        dxa = x2 - x1
+        dua = u2 - u1
+        dva = v2 - v1
+        dwa = w2 - w1
+
+        dyb = y3 - y1
+        dxb = x3 - x1
+        dub = u3 - u1
+        dvb = v3 - v1
+        dwb = w3 - w1
+
+        mxa = dxa / abs(dya) if dya != 0 else 0
+        mxb = dxb / abs(dyb) if dyb != 0 else 0
+        mua = dua / abs(dya) if dya != 0 else 0
+        mub = dub / abs(dyb) if dyb != 0 else 0
+        mva = dva / abs(dya) if dya != 0 else 0
+        mvb = dvb / abs(dyb) if dyb != 0 else 0
+        mwa = dwa / abs(dya) if dya != 0 else 0
+        mwb = dwb / abs(dyb) if dyb != 0 else 0
+
+        if (dya!= 0):
+            for i in range(y1,y2+1):
+                firstX = int(x1 + mxa*(i - y1))
+                lastX = int(x1 + mxb*(i - y1))
+                firstU = u1 + mua * (i - y1)
+                firstV = v1 + mva * (i - y1)
+                firstW = w1 + mwa * (i - y1)
+
+                lastU = u1 + mub * (i - y1)
+                lastV = v1 + mvb * (i - y1)
+                lastW = w1 + mwb * (i - y1)
+
+                if(firstX > lastX):
+                    firstX, lastX = lastX, firstX
+                    firstU, lastU = lastU, firstU
+                    firstV, lastV = lastV, firstV
+                    firstW, lastW = lastW, firstW
+
+                tStep = 1 / (lastX - firstX) if (lastX - firstX) != 0 else 0
+                t = 0
+
+                for j in range(firstX, lastX+1):
+                    texU = (1 - t) * firstU + t * lastU
+                    texV = (1 - t) * firstV + t * lastV
+                    texW = (1 - t) * firstW + t * lastW
+                    color = img.get_at((int((1-texU/texW) * (img.get_size()[0]-0.00001)), int(texV/texW * (img.get_size()[1]-0.00001))))
+                    #gameDisplay.display.set_at((j, i), (color[0] * (tri.color[0] / 255) , color[1] * (tri.color[1] / 255), color[2] * (tri.color[2] / 255 )))
+                    pixelArray[j,i] = (color[0] * (tri.color[0] / 255) , color[1] * (tri.color[1] / 255), color[2] * (tri.color[2] / 255 ))
+                    t+= tStep
+
+        dyc = y3 - y2
+        dxc = x3 - x2
+        duc = u3 - u2
+        dvc = v3 - v2
+        dwc = w3 - w2
+        mxc = dxc / abs(dyc) if dyc != 0 else 0
+        muc = duc / abs(dyc) if dyc != 0 else 0
+        mvc = dvc / abs(dyc) if dyc != 0 else 0
+        mwc = dwc / abs(dyc) if dyc != 0 else 0
+
+        if (dyb != 0):
+            for i in range(y2, y3+1):
+                firstX = int(x2 + mxc * (i - y2))
+                lastX = int(x1 + mxb * (i - y1))
+
+                firstU = u2 + muc * (i - y2)
+                firstV = v2 + mvc * (i - y2)
+                firstW = w2 + mwc * (i - y2)
+
+                lastU = u1 + mub * (i - y1)
+                lastV = v1 + mvb * (i - y1)
+                lastW = w1 + mwb * (i - y1)
+
+                if (firstX > lastX):
+                    firstX, lastX = lastX, firstX
+                    firstU, lastU = lastU, firstU
+                    firstV, lastV = lastV, firstV
+                    firstW, lastW = lastW, firstW
+
+                tStep = 1 / (lastX - firstX) if (lastX - firstX) != 0 else 0
+                t = 0
+
+                for j in range(firstX, lastX + 1):
+                    texU = (1 - t) * firstU + t * lastU
+                    texV = (1 - t) * firstV + t * lastV
+                    texW = (1 - t) * firstW + t * lastW
+                    color = img.get_at((int((1 - texU / texW) * (img.get_size()[0] - 0.00001)),int(texV / texW * (img.get_size()[1] - 0.00001))))
+                    #gameDisplay.display.set_at((j, i), (color[0] * (tri.color[0] / 255), color[1] * (tri.color[1] / 255),color[2] * (tri.color[2] / 255)))
+                    pixelArray[j, i] = (color[0] * (tri.color[0] / 255), color[1] * (tri.color[1] / 255), color[2] * (tri.color[2] / 255))
+                    t+= tStep
+
+        pixelArray.close()
 
     def renderUI(object):
-        pass
         if (hasattr(object, "Text")):
             font = pygame.font.SysFont(None, object.Text.fontSize)
             text = font.render(object.Text.text, True,object.Text.color)
 
-            newPosUI = Vector2D(object.Transform2D.position.x * (gameDisplay.scale.x/2 / cam.Camera.scale) - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform2D.position.y * (gameDisplay.scale.y/2 / cam.Camera.scale) + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
+            newPosUI = Vector2D(object.Transform.position.x * (gameDisplay.scale.x/2 / cam.Camera.scale) - text.get_rect().width / 2 + gameDisplay.scale.x / 2, object.Transform.position.y * (gameDisplay.scale.y/2 / cam.Camera.scale) + text.get_rect().height / 2  - gameDisplay.scale.y / 2)
             newPosUI.y = -newPosUI.y
 
 
             gameDisplay.display.blit(text, newPosUI.ToList())
+        if (hasattr(object, "Button")):
+            newMousePos = cam.Camera.ScreenToWorldVector2D(mousePos)
+
+            if object.Transform.position.x - object.Transform.scale.x / 2 < newMousePos.x < object.Transform.position.x + object.Transform.scale.x / 2 and object.Transform.position.y - object.Transform.scale.y / 2 < newMousePos.y < object.Transform.position.y + object.Transform.scale.y / 2:
+                if MouseDown["button0"]:
+                    for func in object.Button.onClick:
+                        try:
+                            func(object)
+                        except TypeError:
+                            func()
+
 
 
 
@@ -285,17 +447,17 @@ def renderer():
 
 
     for cam in camera:
-        cam.Transform2D.position = (cam.Transform2D.position * gameDisplay.scale/2) / cam.Camera.scale
+        #cam.Transform.position = (cam.Transform.position * gameDisplay.scale/2) / cam.Camera.scale
         for object in objects:
             if object.isVisible:
                 #Outline
                 if (hasattr(object, "Outline")):
                     if (hasattr(object, "Sprite")):
                         newPos = cam.Camera.TranslateWorldVector2D(
-                            Vector2D(object.Transform2D.position.x - object.Transform2D.scale.x / 2,
-                                     object.Transform2D.position.y + object.Transform2D.scale.y / 2))
+                            Vector2D(object.Transform.position.x - object.Transform.scale.x / 2,
+                                     object.Transform.position.y + object.Transform.scale.y / 2))
 
-                        newImage = pygame.transform.scale(object.Sprite.image, object.Transform2D.scale.ToList())
+                        newImage = pygame.transform.scale(object.Sprite.image, object.Transform.scale.ToList())
 
                         outline = pygame.mask.from_surface(newImage)
                         outlineSurface = outline.to_surface()
@@ -304,10 +466,6 @@ def renderer():
                         newSurface = pygame.Surface(outlineSurface.get_size()).convert_alpha()
                         newSurface.fill([0,0,0,0])
                         newSurface.blit(outlineSurface, (0,0))
-
-                        # colorImage = pygame.Surface(outlineSurface.get_size()).convert_alpha()
-                        # colorImage.fill(sprite.Outline.color)
-                        # newSurface.blit(colorImage, (0, 0), special_flags=BLEND_MULT)
 
                         colorImage = pygame.Surface(newSurface.get_rect().size, pygame.SRCALPHA)
                         colorImage.fill(object.Outline.color)
@@ -322,14 +480,14 @@ def renderer():
                         outline = copy.deepcopy(object)
                         outline.color = object.Outline.color
 
-                        outline.Transform2D.position.x += object.Outline.width.x
+                        outline.Transform.position.x += object.Outline.width.x
                         render2D(outline)
-                        outline.Transform2D.position.x -= 2 * object.Outline.width.x
+                        outline.Transform.position.x -= 2 * object.Outline.width.x
                         render2D(outline)
-                        outline.Transform2D.position.x += object.Outline.width.x
-                        outline.Transform2D.position.y += object.Outline.width.y
+                        outline.Transform.position.x += object.Outline.width.x
+                        outline.Transform.position.y += object.Outline.width.y
                         render2D(outline)
-                        outline.Transform2D.position.y -= 2 * object.Outline.width.y
+                        outline.Transform.position.y -= 2 * object.Outline.width.y
                         render2D(outline)
 
 
@@ -337,59 +495,11 @@ def renderer():
                 # 2D !!!
                 render2D(object)
 
+                # 3D !!!
+                render3D(object)
 
                 # UI !!!
                 renderUI(object)
-
-
-                #3D !!!
-                # if (object in objects3D):
-                #
-                #
-                #
-                #     render3D(object)
-                #
-                #     trianglesToRaster.sort(key=lambda tri: (tri.p[0][2] + tri.p[1][2] + tri.p[2][2]) / 3.0, reverse=True)
-                #
-                #     # Clipping on boarders of the screen
-                #     for tri in trianglesToRaster:
-                #
-                #         listTriangles = []
-                #         listTriangles.append(tri)
-                #         newTriangles = 1
-                #
-                #         for p in range(4):
-                #             while (newTriangles > 0):
-                #                 test = listTriangles[-1]
-                #                 listTriangles.pop()
-                #                 newTriangles -= 1
-                #
-                #                 if (p == 0):
-                #                     clipped = TriangleClipAgainstPlane([0, 0, 0], [0, 1, 0], test)
-                #                 elif (p == 1):
-                #                     clipped = TriangleClipAgainstPlane([0, gameDisplay.display.get_height() - 1, 0], [0, -1, 0],
-                #                                                        test)
-                #                 elif (p == 2):
-                #                     clipped = TriangleClipAgainstPlane([0, 0, 0], [1, 0, 0], test)
-                #                 elif (p == 3):
-                #                     clipped = TriangleClipAgainstPlane([gameDisplay.display.get_width() - 1, 0, 0], [-1, 0, 0],
-                #                                                        test)
-                #
-                #                 for w in range(len(clipped)):
-                #                     listTriangles.append(clipped[w])
-                #
-                #             newTriangles = len(listTriangles)
-                #
-                #         for newTri in listTriangles:
-                #             # Draws the Triangles
-                #             pygame.draw.polygon(gameDisplay.display, newTri.color,
-                #                                 [[newTri.p[0][0], newTri.p[0][1]], [newTri.p[1][0], newTri.p[1][1]],
-                #                                  [newTri.p[2][0], newTri.p[2][1]]])
-                #             # pygame.gfxdraw.polygon(gameDisplay.display, [[newTri.p[0][0],newTri.p[0][1]],[newTri.p[1][0],newTri.p[1][1]],[newTri.p[2][0],newTri.p[2][1]]],newTri.color)
-                #
-                #             # Draws the border of the Triangles
-                #             # pygame.draw.polygon(gameDisplay.display, (0,0,0), [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]],7)
-                #             # pygame.gfxdraw.aapolygon(gameDisplay.display, [[newTri.p[0][0], newTri.p[0][1]],[newTri.p[1][0], newTri.p[1][1]],[newTri.p[2][0], newTri.p[2][1]]], (0,0,0))
 
 
 
@@ -434,6 +544,7 @@ def checkScreenResize():
                     gameDisplay.scale.x = proportion * gameDisplay.scale.y
 
             gameDisplay.display = pygame.display.set_mode((int(gameDisplay.scale.x), int(gameDisplay.scale.y)), DOUBLEBUF|HWSURFACE|RESIZABLE)
+            depthBuffer = [0] * int(gameDisplay.scale.x * gameDisplay.scale.y + gameDisplay.scale.x)
 
 
 
@@ -458,11 +569,10 @@ def Main():
         checkScreenResize()
         gameDisplay.display.fill(gameDisplay.bgColor)
         physics2D()
-        input()
+        inputSystem()
         for update in updateFunctions:
             update()
         renderer()
-        eventsUI()
         pygame.display.flip()
         clock.tick(Variables.fps)
 
@@ -473,6 +583,7 @@ def Main():
 gameDisplay = __Window()
 updateFunctions = []
 objects = []
+depthBuffer = [0] * (gameDisplay.scale.x * gameDisplay.scale.y + gameDisplay.scale.x)
 
 gameDisplay.scale = copy.copy(gameDisplay.originalScale)
 

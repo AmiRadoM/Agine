@@ -1,4 +1,5 @@
 from .Objects2D import *
+from .Objects3D import Vector3D
 import Agine.Variables as Variables
 from .Attributes import *
 
@@ -16,7 +17,6 @@ def AABB(object1, object2):
     return False
 
 def DynamicAABB(object1, object2):
-    from .Agine_main import gameDisplay
     col1 = object1.BoxCollider
     col2 = object2.BoxCollider
 
@@ -42,14 +42,14 @@ def DynamicAABB(object1, object2):
 
 def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
-    lineDirection = Vector2D((endPoint.x - startPoint.x), (endPoint.y - startPoint.y))
+    lineDirection = Vector3D((endPoint.x - startPoint.x), (endPoint.y - startPoint.y),1)
     if(lineDirection.x == 0):
         return False, None, None, None
     if (lineDirection.y == 0):
         return False, None, None, None
 
-    nearTime = (sqrPosition + Vector2D(-sqrScale.x/2,sqrScale.y/2) - startPoint) / lineDirection
-    farTime = (Vector2D(sqrScale.x/2, - sqrScale.y/2) + sqrPosition  - startPoint) / lineDirection
+    nearTime = (sqrPosition + Vector3D(-sqrScale.x/2,sqrScale.y/2) - startPoint) / lineDirection
+    farTime = (Vector3D(sqrScale.x/2, - sqrScale.y/2) + sqrPosition  - startPoint) / lineDirection
 
     #Sorting
     if(nearTime.x > farTime.x):
@@ -70,21 +70,21 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
 
 
-    contactPoint = Vector2D(startPoint.x + hitNearTime * lineDirection.x,startPoint.y + hitNearTime * lineDirection.y)
+    contactPoint = Vector3D(startPoint.x + hitNearTime * lineDirection.x,startPoint.y + hitNearTime * lineDirection.y)
 
     #Normal
-    contactNormal = Vector2D(0,0)
+    contactNormal = Vector3D(0,0)
 
     if(nearTime.x>nearTime.y):
         if(lineDirection.x < 0):
-            contactNormal = Vector2D(1,0)
+            contactNormal = Vector3D(1,0)
         else:
-            contactNormal = Vector2D(-1,0)
+            contactNormal = Vector3D(-1,0)
     elif(nearTime.x<nearTime.y):
         if (lineDirection.y < 0):
-            contactNormal = Vector2D(0,1)
+            contactNormal = Vector3D(0,1)
         else:
-            contactNormal = Vector2D(0,-1)
+            contactNormal = Vector3D(0,-1)
 
 
     return True, hitNearTime, contactNormal, contactPoint
@@ -99,16 +99,18 @@ def collision2D(i):
 
     for b in boxcollider:
 
-        b.BoxCollider.position = b.Transform2D.position + b.BoxCollider.localPosition
+        b.BoxCollider.position = b.Transform.position + b.BoxCollider.localPosition
         if(type(b) != Circle):
-            b.BoxCollider.scale = b.Transform2D.scale * b.BoxCollider.localScale
+            b.BoxCollider.scale = b.Transform.scale * b.BoxCollider.localScale
+
         if(type(b) == Circle):
             b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
 
 
         if (b.BoxCollider.isVisible):
             for cam in camera:
-                cam.Camera.Draw.Square(position=b.BoxCollider.position, scale= b.BoxCollider.scale,color= [0,255,0], width= 3)
+                pass
+                #cam.Camera.Draw.Square(position=b.BoxCollider.position, scale= b.BoxCollider.scale,color= [0,255,0], width= 3)
         # b.BoxCollider.square.Transform2D.position = b.BoxCollider.position
         # b.BoxCollider.square.Transform2D.scale = b.BoxCollider.scale
         # b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
@@ -136,7 +138,6 @@ def collision2D(i):
 
                         # So They Would't Get Stuck
                         i.Rigidbody2D.velocity += c[1]
-
 
                     i.Rigidbody2D.velocity += abs(v1) * c[1]
 

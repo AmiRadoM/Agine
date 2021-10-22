@@ -1,27 +1,40 @@
+import math
 
 class Attribute():
     pass
 
-
 transform = []
-class Transform2D(Attribute):
+class Transform(Attribute):
     def __init__(self):
-        from Agine.Objects2D import Vector2D
-        self.position = Vector2D.Zero()
-        self.scale = Vector2D(1,1)
-        self.rotation = 0
+        from Agine.Objects3D import Vector3D
+        self.position = Vector3D.Zero()
+        self.scale = Vector3D(1,1,1)
+        self.rotation = Vector3D.Zero()
+
+    def Up(self):
+        from Agine.Objects3D import Vector3D, Matrix4x4
+        return ((Matrix4x4.MakeRotationZ(self.rotation.z) * Matrix4x4.MakeRotationX(self.rotation.x)) * Vector3D.Up()).Normalize()
+
+    def Forward(self):
+        from Agine.Objects3D import Vector3D, Matrix4x4
+        return ((Matrix4x4.MakeRotationY(self.rotation.y) * Matrix4x4.MakeRotationX(self.rotation.x)) * Vector3D.Forward()).Normalize()
+
+    def Right(self):
+        from Agine.Objects3D import Vector3D, Matrix4x4
+        return ((Matrix4x4.MakeRotationY(self.rotation.y) * Matrix4x4.MakeRotationZ(self.rotation.z)) * Vector3D.Right()).Normalize()
+
 
 
 rigidbody2d = []
 class Rigidbody2D(Attribute):
     def __init__(self, gravity = None, mass = 1, useGravity = True):
-        from Agine.Objects2D import Vector2D
+        from Agine.Objects3D import Vector3D
         if (gravity == None):
-            self.gravity = Vector2D(0,-9.81)  # m/s^2
+            self.gravity = Vector3D(0,-0.981,0)  # m/s^2
         else:
             self.gravity = gravity
         self.mass = mass  # kg
-        self.velocity = Vector2D(0,0)  # m/s
+        self.velocity = Vector3D(0,0,0)  # m/s
 
         self.useGravity = useGravity  # is the rigidbody affected by gravity
 
@@ -36,26 +49,27 @@ class Rigidbody2D(Attribute):
 boxcollider = []
 class BoxCollider(Attribute):
     def __init__(self, isVisible = False, isTrigger = False):
-        from Agine.Objects2D import Vector2D
-        self.position = Vector2D.Zero()
-        self.localPosition = Vector2D.Zero()
-        self.scale = Vector2D.Zero()
-        self.localScale = Vector2D(1,1)
+        from Agine.Objects3D import Vector3D
+        self.position = Vector3D.Zero()
+        self.localPosition = Vector3D.Zero()
+        self.scale = Vector3D.Zero()
+        self.localScale = Vector3D(1,1,1)
         self.isVisible = isVisible
         self.isTrigger = isTrigger
 
 
 camera = []
-
-
-
-
 class Camera(Attribute):
 
     def __init__(self):
         self.Draw = self.__Draw(self)
         self.scale = 5
+        self.near = 0.1
+        self.far = 1000
+        self.fov = 90
 
+    def fovRad(self):
+        return 1/math.tan(math.radians(self.fov * 0.5))
 
     class __Draw():
         def __init__(self, cam):
@@ -91,11 +105,11 @@ class Camera(Attribute):
 
     def TranslateWorldVector2D(self, vector2D):
         from .Agine_main import gameDisplay
-        from .Objects2D import Vector2D
+        from .Objects3D import Vector3D
 
-        newV = Vector2D()
-        newV.x = (vector2D.x * gameDisplay.scale.x/2) / self.scale + gameDisplay.scale.x / 2 - self.owner.Transform2D.position.x
-        newV.y = -(vector2D.y * gameDisplay.scale.y/2) / self.scale + gameDisplay.scale.y / 2 + self.owner.Transform2D.position.y
+        newV = Vector3D()
+        newV.x = (vector2D.x * gameDisplay.scale.x/2) / self.scale + gameDisplay.scale.x / 2 - self.owner.Transform.position.x
+        newV.y = -(vector2D.y * gameDisplay.scale.y/2) / self.scale + gameDisplay.scale.y / 2 + self.owner.Transform.position.y
         return newV
 
     def ScreenToWorldVector2D(self, vector2D):
@@ -103,8 +117,8 @@ class Camera(Attribute):
         from .Objects2D import Vector2D
 
         newV = Vector2D()
-        newV.x = vector2D.x / ((gameDisplay.scale.x/2) / self.scale) + self.owner.Transform2D.position.x
-        newV.y = (vector2D.y - (gameDisplay.scale.x/2 - gameDisplay.scale.y/2)) / ((gameDisplay.scale.y/2) / self.scale) + self.owner.Transform2D.position.y
+        newV.x = vector2D.x / ((gameDisplay.scale.x/2) / self.scale) + self.owner.Transform.position.x
+        newV.y = (vector2D.y - (gameDisplay.scale.x/2 - gameDisplay.scale.y/2)) / ((gameDisplay.scale.y/2) / self.scale) + self.owner.Transform.position.y
         return newV
 
     def WorldToScreenVector2D(self, vector2D):

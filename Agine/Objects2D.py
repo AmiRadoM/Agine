@@ -2,20 +2,22 @@ import math
 import pygame
 from .Attributes import *
 
-assetsPath = "./assets/"
-
 
 
 class Vector2D():
     def __init__(self, x = 0, y = 0):
         self.x = x
         self.y = y
+        self.w = 1
 
 
     @staticmethod
     def Zero():
         return Vector2D(0,0)
 
+    @staticmethod
+    def ListToVector2D(list):
+        return Vector2D(list[0], list[1])
 
     def Normalize(self):
         if (self == Vector2D.Zero()):
@@ -27,6 +29,7 @@ class Vector2D():
 
     def ToList(self):
         return [self.x, self.y]
+
 
 
     def __int__(self):

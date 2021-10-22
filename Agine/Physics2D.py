@@ -1,11 +1,11 @@
 from .Variables import *
 from .Collision2D import *
-from .Objects2D import Vector2D
+from .Objects3D import Vector3D
 
 
 
 class Force2D():
-    def __init__(self, force = Vector2D(0,0), type = "force"):
+    def __init__(self, force = Vector3D(0,0), type = "force"):
         '''
             :arg force: [x,y] is the vector of the force
             :arg type: is the type of the force, which can be: force, acceleration,  impulse, velocityChange
@@ -26,8 +26,7 @@ def physics2D():
 
         #Gravity
         if (rb.useGravity):
-
-            rb.velocity += rb.gravity * (gameDisplay.scale / 1000)
+            rb.velocity += rb.gravity/10 * Vector3D((gameDisplay.scale / 1000).x,(gameDisplay.scale / 1000).y,1)
 
 
         for force in rb.forces:
@@ -49,4 +48,4 @@ def physics2D():
 
 
         # Velocity
-        object.Transform2D.position += rb.velocity * Variables.deltaTime
+        object.Transform.position += rb.velocity * Variables.deltaTime

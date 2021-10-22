@@ -78,11 +78,11 @@ title.addAttr("Text")
 title.Text.text = "Agine"
 title.Text.fontSize = 90
 title.Text.color = [0,128,0]
-title.Transform2D.position = Vector2D(-3.5, 4.2)
+title.Transform.position = Vector3D(-3.5, 4.2)
 
 newProjectBtn = GameObject()
-newProjectBtn.Transform2D.position = Vector2D(3.5,4.2)
-newProjectBtn.Transform2D.scale = Vector2D(2,1)
+newProjectBtn.Transform.position = Vector3D(3.5,4.2)
+newProjectBtn.Transform.scale = Vector3D(2,1)
 newProjectBtn.addAttr("Button")
 newProjectBtn.Button.onClick.append(NewProject)
 newProjectBtn.addAttr("Square")

@@ -14,7 +14,7 @@ MouseUp = {"button0" : False, "button1" : False, "button2": False}
 mousePos = Vector2D(0,0)
 
 
-def input():
+def inputSystem():
 
     #KEYBOARD
     #Pressed
@@ -405,6 +405,7 @@ def input():
     mousePressed = pygame.mouse.get_pressed()
 
     MousePressed["button0"] = mousePressed[0]
+    MousePressed["button0"] = MouseDown["button0"]
     if MousePressed["button0"]:
         MouseDown["button0"] = False
     else:
