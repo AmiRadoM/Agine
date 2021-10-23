@@ -20,7 +20,7 @@ from .ObjectsUI import *
 
 
 class __Window():
-    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector3D(1000,1000,0)):
+    def __init__(self, title = "Agine Game", backgroundColor = [255, 255, 255], scale = Vector3D(900,900,0)):
         self.scale = scale
         self.originalScale = scale
         self.bgColor = backgroundColor
@@ -47,6 +47,7 @@ class GameObject():
         self.Transform = Transform()
         objects.append(self)
 
+
     def addAttr(self, attr):
         """
         :param attr: The name of the attribute
@@ -60,6 +61,10 @@ class GameObject():
         except:
             raise TypeError("Missing an Agine2D Attribute Name!")
 
+def Create(gameObject):
+    newGameObject = copy.deepcopy(gameObject)
+    objects.append(newGameObject)
+    return newGameObject
 
 
 

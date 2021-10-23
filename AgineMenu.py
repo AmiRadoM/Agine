@@ -17,7 +17,8 @@ def update():
 
 
 #Start
-
+cam = GameObject()
+cam.addAttr("Camera")
 
 
 #Init
@@ -25,31 +26,28 @@ updateFunctions.append(update)
 Main()"""
 
     print("Creating A New Project...")
-    try:
-        def Create(dir):
-            with open(dir + "/Main.py", "w+") as p:
-                p.write(newProjectMain)
+    def Create(dir):
+        with open(dir + "/Main.py", "w+") as p:
+            p.write(newProjectMain)
 
-        #if there is no projects directory, create one
-        try:
-            os.mkdir(projectsPath)
-        except:
-            pass
-        try:
-            os.mkdir(projectsPath + "/" + name)
-            Create(projectsPath + "/" + name)
-        except:
-            i = 1
-            while (os.path.exists(projectsPath + "/" + name + str(i))):
-                i += 1
-            os.mkdir(projectsPath + "/" + name + str(i))
-            Create(projectsPath + "/" + name + str(i))
-            del i
+    #if there is no projects directory, create one
+    try:
+        os.mkdir(projectsPath)
     except:
-        print("An Error Has Occurred While Trying to Create a New Project")
-    else:
-        print("Created a New Project Successfully :)")
-        OpenProject("NewAgineProject")
+        pass
+    try:
+        os.mkdir(projectsPath + "/" + name)
+        Create(projectsPath + "/" + name)
+    except:
+        i = 1
+        while (os.path.exists(projectsPath + "/" + name + str(i))):
+            i += 1
+        os.mkdir(projectsPath + "/" + name + str(i))
+        Create(projectsPath + "/" + name + str(i))
+        del i
+
+    print("Created a New Project Successfully :)")
+    OpenProject("NewAgineProject")
 
 def OpenProject( name ):
     # __import__(projectsPath[2:]+"."+name+".Main")
