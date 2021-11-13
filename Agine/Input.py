@@ -349,39 +349,46 @@ def inputSystem():
         KeyDown["y"] = e.key == pygame.K_y
         KeyDown["z"] = e.key == pygame.K_z
 
-
+        #space
         KeyDown["space"] = e.key == pygame.K_SPACE
+
+        #arrows
+        KeyDown["up"] = e.key == pygame.K_UP
+        KeyDown["down"] = e.key == pygame.K_DOWN
+        KeyDown["right"] = e.key == pygame.K_RIGHT
+        KeyDown["left"] = e.key == pygame.K_LEFT
+
 
     #Up
     event = pygame.event.get(pygame.KEYUP)
     for e in event:
         # letters
-        KeyDown["a"] = e.key == pygame.K_a
-        KeyDown["b"] = e.key == pygame.K_b
-        KeyDown["c"] = e.key == pygame.K_c
-        KeyDown["d"] = e.key == pygame.K_d
-        KeyDown["e"] = e.key == pygame.K_e
-        KeyDown["f"] = e.key == pygame.K_f
-        KeyDown["g"] = e.key == pygame.K_g
-        KeyDown["h"] = e.key == pygame.K_h
-        KeyDown["i"] = e.key == pygame.K_i
-        KeyDown["j"] = e.key == pygame.K_j
-        KeyDown["k"] = e.key == pygame.K_k
-        KeyDown["l"] = e.key == pygame.K_l
-        KeyDown["m"] = e.key == pygame.K_m
-        KeyDown["n"] = e.key == pygame.K_n
-        KeyDown["o"] = e.key == pygame.K_o
-        KeyDown["p"] = e.key == pygame.K_p
-        KeyDown["q"] = e.key == pygame.K_q
-        KeyDown["r"] = e.key == pygame.K_r
-        KeyDown["s"] = e.key == pygame.K_s
-        KeyDown["t"] = e.key == pygame.K_t
-        KeyDown["u"] = e.key == pygame.K_u
-        KeyDown["v"] = e.key == pygame.K_v
-        KeyDown["w"] = e.key == pygame.K_w
-        KeyDown["x"] = e.key == pygame.K_x
-        KeyDown["y"] = e.key == pygame.K_y
-        KeyDown["z"] = e.key == pygame.K_z
+        KeyUp["a"] = e.key == pygame.K_a
+        KeyUp["b"] = e.key == pygame.K_b
+        KeyUp["c"] = e.key == pygame.K_c
+        KeyUp["d"] = e.key == pygame.K_d
+        KeyUp["e"] = e.key == pygame.K_e
+        KeyUp["f"] = e.key == pygame.K_f
+        KeyUp["g"] = e.key == pygame.K_g
+        KeyUp["h"] = e.key == pygame.K_h
+        KeyUp["i"] = e.key == pygame.K_i
+        KeyUp["j"] = e.key == pygame.K_j
+        KeyUp["k"] = e.key == pygame.K_k
+        KeyUp["l"] = e.key == pygame.K_l
+        KeyUp["m"] = e.key == pygame.K_m
+        KeyUp["n"] = e.key == pygame.K_n
+        KeyUp["o"] = e.key == pygame.K_o
+        KeyUp["p"] = e.key == pygame.K_p
+        KeyUp["q"] = e.key == pygame.K_q
+        KeyUp["r"] = e.key == pygame.K_r
+        KeyUp["s"] = e.key == pygame.K_s
+        KeyUp["t"] = e.key == pygame.K_t
+        KeyUp["u"] = e.key == pygame.K_u
+        KeyUp["v"] = e.key == pygame.K_v
+        KeyUp["w"] = e.key == pygame.K_w
+        KeyUp["x"] = e.key == pygame.K_x
+        KeyUp["y"] = e.key == pygame.K_y
+        KeyUp["z"] = e.key == pygame.K_z
 
         KeyUp["space"] = e.key == pygame.K_SPACE
 

@@ -1,15 +1,13 @@
+import math
+
 from Agine import *
 
+class Pole():
+    def __init__(self):
+        self.t = 0
+        pass
 
 def update():
-    # mesh.Transform.rotation.z += 1 * Variables.deltaTime
-    # mesh.Transform.rotation.x += 1 * Variables.deltaTime
-    # mesh.Transform.rotation.y += 1 * Variables.deltaTime
-
-    meshCube.Transform.rotation.z += 1 * Variables.deltaTime
-    meshCube.Transform.rotation.x += 1 * Variables.deltaTime
-    meshCube.Transform.rotation.y += 1 * Variables.deltaTime
-
     if (KeyPressed["space"]):
         cam.Transform.position.y += 1 * Variables.deltaTime
     if (KeyPressed["lshift"]):
@@ -26,50 +24,32 @@ def update():
         cam.Transform.rotation.y -= 1 * Variables.deltaTime
     if (KeyPressed["right"]):
         cam.Transform.rotation.y += 1 * Variables.deltaTime
+
+    for p in poles:
+        p.Pole.t += 1
+
+        p.Transform.scale.y = math.sin(p.Pole.t - Vector2D(p.Transform.position.x, p.Transform.position.z).Distance()) + 1
+
     pass
 
 
 #Start
 cam = GameObject()
-cam.addAttr("Camera")
+cam.Camera = Camera()
 
-o1 = GameObject()
-o2 = GameObject()
-ground = GameObject()
+w = 3
+h = 3
 
-o1.Transform.position.x = 2
-o2.Transform.position.x = -2
+poles = []
 
-o1.Transform.position.y = 2
-o2.Transform.position.y = 2
+for i in range(0,w):
+    for j in range(0,h):
+        meshCube = GameObject()
+        meshCube.Cube = Cube()
+        meshCube.Transform.position = Vector3D(i - w/2 +  0.5, 0, j - h/2)
+        meshCube.Pole = Pole()
+        poles.append(meshCube)
 
-ground.Transform.scale.x = 9
-
-# o1.addAttr("Square")
-# o2.addAttr("Square")
-# ground.addAttr("Square")
-
-o1.addAttr("BoxCollider")
-o2.addAttr("BoxCollider")
-ground.addAttr("BoxCollider")
-
-o1.addAttr("Rigidbody2D")
-o2.addAttr("Rigidbody2D")
-
-o1.Rigidbody2D.velocity.y = 20
-o2.Rigidbody2D.velocity.y = 20
-
-o1.Rigidbody2D.mass = 1
-o2.Rigidbody2D.mass = 3
-
-meshCube = GameObject()
-meshCube.addAttr("Cube")
-meshCube.Cube.texture = pygame.image.load("./Amir.png")
-meshCube.Transform.position = Vector3D(0,0,5)
-mesh = GameObject()
-# mesh.addAttr("Mesh")
-# mesh.Mesh.LoadFromOBJ("./StarFox.obj")
-# mesh.Transform.position.x = 10
 
 
 #Init

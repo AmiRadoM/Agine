@@ -93,57 +93,68 @@ def LineVsSqr(startPoint, endPoint, sqrPosition, sqrScale):
 
 
 
-def collision2D(i):
-    from .Attributes import boxcollider
-    from .Agine_main import gameDisplay
+def collision2D():
+    from .Agine_main import gameDisplay, objects
 
-    for b in boxcollider:
+    for b in objects:
+        if (hasattr(b,"BoxCollider")):
 
-        b.BoxCollider.position = b.Transform.position + b.BoxCollider.localPosition
-        if(type(b) != Circle):
-            b.BoxCollider.scale = b.Transform.scale * b.BoxCollider.localScale
+            b.BoxCollider.position = b.Transform.position + b.BoxCollider.localPosition
+            if(type(b) != Circle):
+                b.BoxCollider.scale = b.Transform.scale * b.BoxCollider.localScale
 
-        if(type(b) == Circle):
-            b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
+            if(type(b) == Circle):
+                b.BoxCollider.scale =  b.BoxCollider.localScale + b.radius * 2
 
 
-        if (b.BoxCollider.isVisible):
-            for cam in camera:
-                pass
-                #cam.Camera.Draw.Square(position=b.BoxCollider.position, scale= b.BoxCollider.scale,color= [0,255,0], width= 3)
-        # b.BoxCollider.square.Transform2D.position = b.BoxCollider.position
-        # b.BoxCollider.square.Transform2D.scale = b.BoxCollider.scale
-        # b.BoxCollider.square.isVisible = b.BoxCollider.isVisible
+            if (b.BoxCollider.isVisible):
 
+                for cam in objects:
+                    if (hasattr(cam,"Camera")):
+                        cam.Camera.Draw.Square(position=b.BoxCollider.position, scale= b.BoxCollider.scale,color= [0,255,0], width= 10)
 
     flag = False
-    for j in reversed(sorted(boxcollider, key= lambda x: (hasattr(x, "Rigidbody2D")))):
-        if i != j:
-            if (hasattr(i, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
-                collisions = []
-                collided, contactNormal, contactTime = DynamicAABB(i, j)
-                if (collided):
-                    collisions.append([j, contactNormal, contactTime])
-                collisions.sort(key=lambda x: x[2])
-                for c in collisions:
-                    v1 = i.Rigidbody2D.velocity
-                    m1 = i.Rigidbody2D.mass
+    for i in objects:
+        if (hasattr(i,"BoxCollider")):
+            for j in objects:
+                if (hasattr(j,"BoxCollider")):
+                    if i != j:
 
-                    if (hasattr(j, "Rigidbody2D")):
+                        if (hasattr(i, "Rigidbody2D") and hasattr(j, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
+                            collisions = []
+                            collided, contactNormal, contactTime = DynamicAABB(i, j)
+                            if (collided):
+                                collisions.append([j, contactNormal, contactTime])
+                            collisions.sort(key=lambda x: x[2])
+                            for c in collisions:
+                                v1 = i.Rigidbody2D.velocity
+                                m1 = i.Rigidbody2D.mass
 
-                        v2 = j.Rigidbody2D.velocity
-                        m2 = j.Rigidbody2D.mass
+                                if (hasattr(j, "Rigidbody2D")):
 
-                        j.Rigidbody2D.velocity = (v2 * ((m2 - m1) / (m1 + m2))) + (v1 * ((2 * m1) / (m1 + m2))) * abs(c[1])
+                                    v2 = j.Rigidbody2D.velocity
+                                    m2 = j.Rigidbody2D.mass
 
-                        # So They Would't Get Stuck
-                        i.Rigidbody2D.velocity += c[1]
+                                    j.Rigidbody2D.velocity = (v2 * ((m2 - m1) / (m1 + m2))) + (v1 * ((2 * m1) / (m1 + m2))) * abs(c[1])
 
-                    i.Rigidbody2D.velocity += abs(v1) * c[1]
+                                    # So They Would't Get Stuck
+                                    i.Rigidbody2D.velocity += c[1]
 
-            else:
-                if(AABB(i, j) and i.BoxCollider.isTrigger):
-                    flag = True
+                                i.Rigidbody2D.velocity += abs(v1) * c[1]
+
+                        else:
+
+
+                            if(i.BoxCollider.isTrigger):
+                                i.BoxCollider.triggered = AABB(i, j)
+                                if(i.BoxCollider.triggered):
+                                    for func in i.BoxCollider.onTrigger:
+                                        try:
+                                            func(i)
+                                        except TypeError:
+                                            func()
+                                    flag = True
+
 
 
 

@@ -3,7 +3,6 @@ import math
 class Attribute():
     pass
 
-transform = []
 class Transform(Attribute):
     def __init__(self):
         from Agine.Objects3D import Vector3D
@@ -25,7 +24,6 @@ class Transform(Attribute):
 
 
 
-rigidbody2d = []
 class Rigidbody2D(Attribute):
     def __init__(self, gravity = None, mass = 1, useGravity = True):
         from Agine.Objects3D import Vector3D
@@ -46,7 +44,6 @@ class Rigidbody2D(Attribute):
         self.forces.append(Force2D(force,type))
 
 
-boxcollider = []
 class BoxCollider(Attribute):
     def __init__(self, isVisible = False, isTrigger = False):
         from Agine.Objects3D import Vector3D
@@ -56,9 +53,10 @@ class BoxCollider(Attribute):
         self.localScale = Vector3D(1,1,1)
         self.isVisible = isVisible
         self.isTrigger = isTrigger
+        self.onTrigger = []
+        self.triggered = False
 
 
-camera = []
 class Camera(Attribute):
 
     def __init__(self):
@@ -76,15 +74,19 @@ class Camera(Attribute):
             self.cam = cam
 
         def Square(self, position, scale, color, width):
-            from Agine.Objects2D import Vector2D
-            from .Agine_main import gameDisplay
-            import pygame
-            newPos = self.cam.TranslateWorldVector2D(
-                Vector2D(position.x - scale.x / 2,
-                         position.y + scale.y / 2))
-            pygame.draw.rect(gameDisplay.display, color,
-                             (newPos.x, newPos.y, scale.x, scale.y),
-                             width)
+            from .Objects2D import Square
+            from .Agine_main import debugObjects,objects, GameObject
+            gameObj = GameObject()
+
+            gameObj.Transform.position = position
+            gameObj.Transform.scale = scale
+
+            gameObj.Square = Square()
+            gameObj.Square.color = color
+            gameObj.Square.width = width
+            debugObjects.append(gameObj)
+            objects.remove(gameObj)
+
 
         def Line(self, startPoint, endPoint, color, width):
             from .Agine_main import gameDisplay
@@ -133,7 +135,6 @@ class Camera(Attribute):
         return gameDisplay.scale * (scale / gameDisplay.originalScale)
 
 
-outline = []
 class Outline(Attribute):
     def __init__(self, width = None, color = [0,0,0]):
         from Agine.Objects2D import Vector2D

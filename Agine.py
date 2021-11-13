@@ -7,10 +7,10 @@ def update():
 
 #Start
 cam = GameObject()
-cam.addAttr("Camera")
+cam.Camera = Camera()
 
 a = GameObject()
-a.addAttr("Square")
+a.Square = Square()
 
 #Init
 updateFunctions.append(update)

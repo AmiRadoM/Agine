@@ -69,10 +69,10 @@ gameDisplay.SetScale(Vector2D(800,700))
 gameDisplay.SetSettings(resizable=False)
 
 cam = GameObject()
-cam.addAttr('Camera')
+cam.Camera = Camera()
 
-title= GameObject()
-title.addAttr("Text")
+title = GameObject()
+title.Text = Text()
 title.Text.text = "Agine"
 title.Text.fontSize = 90
 title.Text.color = [0,128,0]
@@ -81,11 +81,11 @@ title.Transform.position = Vector3D(-3.5, 4.2)
 newProjectBtn = GameObject()
 newProjectBtn.Transform.position = Vector3D(3.5,4.2)
 newProjectBtn.Transform.scale = Vector3D(2,1)
-newProjectBtn.addAttr("Button")
+newProjectBtn.Button = Button()
 newProjectBtn.Button.onClick.append(NewProject)
-newProjectBtn.addAttr("Square")
+newProjectBtn.Square = Square()
 newProjectBtn.Square.color = [0,128,0]
-newProjectBtn.addAttr("Text")
+newProjectBtn.Text = Text()
 newProjectBtn.Text.text = "New Project"
 
 

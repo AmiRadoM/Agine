@@ -71,8 +71,8 @@ for j in range(0,y,1):
     for i in range(0,x,1):
         newSqr = GameObject()
         newSqr.Transform.scale = Vector3D(0.2,0.2,1)
-        newSqr.addAttr("Square")
-        newSqr.addAttr("Button")
+        newSqr.Square = Square()
+        newSqr.Button = Button()
         newSqr.Stats = Stats()
         newSqr.Transform.position = Vector3D(-4.9 + j*0.19,4.9 - i*0.19,0)
         arr[j].append(newSqr)
@@ -80,7 +80,7 @@ for j in range(0,y,1):
 
 
 cam = GameObject()
-cam.addAttr("Camera")
+cam.Camera = Camera()
 
 
 #Init

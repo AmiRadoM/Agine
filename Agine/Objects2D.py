@@ -26,7 +26,9 @@ class Vector2D():
             length = math.sqrt(self.x * self.x + self.y * self.y)
             return self / length
 
-
+    def Distance(self):
+        return math.sqrt(self.x * self.x + self.y * self.y)
+    
     def ToList(self):
         return [self.x, self.y]
 
@@ -90,7 +92,6 @@ class Vector2D():
 
 
 
-sprite = []
 class Sprite(Attribute):
     def __init__(self, imagePath = None, color = (255,255,255,255)):
         self.imagePath = imagePath
@@ -99,7 +100,6 @@ class Sprite(Attribute):
 
 
 
-line = []
 class Line(Attribute):
     def __init__(self, startPoint = Vector2D(0,0), endPoint = Vector2D(0,0),color = [0,0,0], width = 1):
         self.startPoint = startPoint
@@ -109,13 +109,11 @@ class Line(Attribute):
 
 
 
-square = []
 class Square(Attribute):
     def __init__(self, width = 0, color = (0,0,0)):
         self.width = width
         self.color = color
 
-polygon = []
 class Polygon(Attribute):
     def __init__(self,points = [Vector2D(0,0),Vector2D(10,0),Vector2D(10,10)],color = (0,0,0), width = 0):
         self.points = points
@@ -123,7 +121,6 @@ class Polygon(Attribute):
         self.width = width
 
 
-circle = []
 class Circle(Attribute):
     def __init__(self, radius = 100, color = (0,0,0),width = 0 ):
         super().__init__()

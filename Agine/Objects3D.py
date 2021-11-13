@@ -205,6 +205,15 @@ class Matrix4x4():
         return matrix
 
     @staticmethod
+    def MakeScale(scale):
+        matrix = Matrix4x4()
+        matrix.matrix[0][0] = scale.x
+        matrix.matrix[1][1] = scale.y
+        matrix.matrix[2][2] = scale.z
+        matrix.matrix[3][3] = 1
+        return matrix
+
+    @staticmethod
     def MakePointAt(position, target, up):
         newForward = target - position
         newForward = newForward.Normalize()
@@ -373,7 +382,6 @@ class Triangle():
             return a,b
 
 
-mesh=[]
 class Mesh(Attribute):
     cubeTriangles = [
 
@@ -406,7 +414,7 @@ class Mesh(Attribute):
     def __init__(self):
         import pygame
         self.triangles = []
-        self.texture= pygame.image.load("./Amir.png")
+        self.texture = pygame.image.load("C:/Users/User/Python/Agine/Agine/texture.png")
 
     def LoadFromOBJ(self, filename, hasTexture = False):
         try:
@@ -439,7 +447,6 @@ class Mesh(Attribute):
         except:
             return False
 
-cube=[]
 class Cube(Mesh, Attribute):
     def __init__(self):
         super().__init__()
