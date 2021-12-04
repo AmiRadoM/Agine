@@ -30,7 +30,7 @@ Main()"""
         with open(dir + "/Main.py", "w+") as p:
             p.write(newProjectMain)
 
-    #if there is no projects directory, create one
+    #if there is no projects directory, Create one
     try:
         os.mkdir(projectsPath)
     except:

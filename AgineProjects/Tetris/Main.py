@@ -263,7 +263,7 @@ def update():
     global currentTetra
     global speedCounter
 
-    # create Tetramino If There Is None
+    # Create Tetramino If There Is None
     if (currentTetra == None):
         currentTetra = CreateTetramino(random.randint(0, 6))
         MoveTetramino(currentTetra, -5, 9)

@@ -46,7 +46,6 @@ class GameObject():
         self.layer = layer
         self.isVisible = isVisible
         self.Transform = Transform()
-        self.lists = [objects]
         objects.append(self)
 
 
@@ -66,20 +65,23 @@ class GameObject():
 
         self.__dict__[key] = value
 
+    def Delete(self):
+        if (self in objects):
+            objects.remove(self)
+        del (self)
 
-    def create(self):
+    def DontRender(self):
+        if (self in objects):
+            objects.remove(self)
+
+    def Create(self):
         newGameObject = GameObject()
 
-        # for attr in [a for a in dir(self) if not a.startswith('__') and not callable(getattr(self, a))]:
-        #     exec(f"newGameObject.{attr} = copy.deepcopy(self.__getattribute__(attr))")
-        newGameObject.__dict__ = self.__dict__.copy()
+        for attr in [a for a in dir(self) if not a.startswith('__') and not callable(getattr(self, a))]:
+            exec(f"newGameObject.{attr} = copy.deepcopy(self.__getattribute__(attr))")
         return newGameObject
 
-    def __del__(self):
-        objects.remove(self)
-        for attr in self.__dict__:
-            delattr(self,attr)
-        del (self)
+
 
 
 

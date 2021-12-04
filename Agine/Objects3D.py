@@ -414,7 +414,7 @@ class Mesh(Attribute):
     def __init__(self):
         import pygame
         self.triangles = []
-        self.texture = pygame.image.load("C:/Users/User/Python/Agine/Agine/texture.png")
+        self.texture = pygame.image.load("C:/Users/User/Dev/Python/Agine/Agine/texture.png")
 
     def LoadFromOBJ(self, filename, hasTexture = False):
         try:

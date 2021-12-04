@@ -39,7 +39,7 @@ class Rigidbody2D(Attribute):
         self.forces = []
 
     def addForce(self, force, type = "acceleration"):
-        from Physics2D import Force2D
+        from .Physics2D import Force2D
 
         self.forces.append(Force2D(force,type))
 

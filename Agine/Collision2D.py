@@ -26,7 +26,7 @@ def DynamicAABB(object1, object2):
     lineCol, hitNearTime, contactNormal, contactPoint  = LineVsSqr(col1.position, endPoint, expandedColPosition,expandedColScale)
 
     
-    #line.delete()
+    #line.Delete()
     if(lineCol):
         if(-hitNearTime<1):
             return True, contactNormal,hitNearTime
