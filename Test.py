@@ -12,7 +12,8 @@ def update():
         s1.Rigidbody2D.velocity = Vector3D(0 , s1.Rigidbody2D.velocity.y)
 
     if(KeyDown["space"]):
-        s1.Rigidbody2D.velocity = Vector3D(s1.Rigidbody2D.velocity.x, 15)
+        # print(Variables.deltaTime)
+        s1.Rigidbody2D.velocity = Vector3D(s1.Rigidbody2D.velocity.x, 100 * Variables.deltaTime)
 
 
     pass
@@ -57,11 +58,11 @@ s1.BoxCollider = BoxCollider()
 
 s1.BoxCollider.localScale.x = 0.5
 ground.BoxCollider.isVisible = True
-s1.BoxCollider.isVisible = True
+# s1.BoxCollider.isVisible = True
 
 
 s1.Rigidbody2D = Rigidbody2D()
-# s1.Rigidbody2D.gravity = Vector3D(0, -0.1)
+s1.Rigidbody2D.gravity = Vector3D(0, -2)
 
 
 

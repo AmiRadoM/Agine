@@ -119,8 +119,9 @@ def collision2D():
             for j in objects:
                 if (hasattr(j,"BoxCollider")):
                     if i != j:
-
-                        if (hasattr(i, "Rigidbody2D") and hasattr(j, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
+                        
+                        #  and hasattr(j, "Rigidbody2D")
+                        if (hasattr(i, "Rigidbody2D")  and (not i.BoxCollider.isTrigger and not j.BoxCollider.isTrigger)):
                             collisions = []
                             collided, contactNormal, contactTime = DynamicAABB(i, j)
                             if (collided):

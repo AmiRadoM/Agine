@@ -2,11 +2,6 @@ import math
 
 from Agine import *
 
-class Pole():
-    def __init__(self):
-        self.t = 0
-        pass
-
 def update():
     if (KeyPressed["space"]):
         cam.Transform.position.y += 1 * Variables.deltaTime
@@ -25,10 +20,7 @@ def update():
     if (KeyPressed["right"]):
         cam.Transform.rotation.y += 1 * Variables.deltaTime
 
-    for p in poles:
-        p.Pole.t += 1
-
-        p.Transform.scale.y = math.sin(p.Pole.t - Vector2D(p.Transform.position.x, p.Transform.position.z).Distance()) + 1
+    cube.Transform.rotation.z +=  1 * Variables.deltaTime
 
     pass
 
@@ -37,18 +29,11 @@ def update():
 cam = GameObject()
 cam.Camera = Camera()
 
-w = 3
-h = 3
 
-poles = []
-
-for i in range(0,w):
-    for j in range(0,h):
-        meshCube = GameObject()
-        meshCube.Cube = Cube()
-        meshCube.Transform.position = Vector3D(i - w/2 +  0.5, 0, j - h/2 + 10)
-        meshCube.Pole = Pole()
-        poles.append(meshCube)
+cube = GameObject()
+cube.Cube = Cube()
+cube.Transform.position.z += 10
+cube.Cube.LoadFromOBJ("./StarFox.obj")
 
 
 

@@ -1,6 +1,6 @@
 from Agine import *
-import Agine.Agine_main as Agine_main
 import os
+import sys
 
 projectsPath = "./AgineProjects"
 
@@ -62,7 +62,8 @@ def update():
 
     pass
 
-
+if not sys.platform == "win32":
+    raise Exception("AgineMenu is only available for Windows operating system")
 
 #Start
 gameDisplay.SetScale(Vector2D(800,700))

@@ -412,14 +412,19 @@ class Mesh(Attribute):
         ]
 
     def __init__(self):
-        import pygame
         self.triangles = []
-        self.texture = pygame.image.load("C:/Users/User/Dev/Python/Agine/Agine/texture.png")
+        self.texture = None
+        self.TextureLoad("./Agine/texture.png")
+    
+    def TextureLoad(self, filename):
+        import pygame
+        self.texture = pygame.image.load(filename)
 
     def LoadFromOBJ(self, filename, hasTexture = False):
         try:
             verts = []
             with open(filename, 'r') as f:
+                self.triangles.clear()
                 for line in f:
                     if (line.split(' ')[0] == 'v'):
                         if (line.split(' ')[1] == 't'):

@@ -15,7 +15,6 @@ from .Collision2D import *
 from .Input import *
 from .Attributes import *
 from .ObjectsUI import *
-from numba import vectorize, void
 
 
 
